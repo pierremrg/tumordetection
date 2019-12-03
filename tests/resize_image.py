@@ -1,4 +1,5 @@
 from PIL import Image
+import os
 from os import walk
 
 class ImageNormalizer:
@@ -7,11 +8,24 @@ class ImageNormalizer:
 	MODE_RESIZING = 1
 	MODE_RESIZING_KEEP_RATIO = 2
 
+	SHAPE_SQUARE = 0
+	SHAPE_RECTANGLE = 1
+
+	SIZE_AUTO = -1
+
+	"""
+	Create a new image normalizer
+
+	@params directory The pictures folder. Two sub-folders should be inside:
+		one called "yes" and another one called "no"
+	"""
 	def __init__(self, directory):
 		self.directory = directory
 		self.images = []
 
-
+	"""
+	Load the pictures and get their data (filename, picture, sizes)
+	"""
 	def loadImagesData(self):
 		(dirpath, dirnames, filenames) = walk(self.directory).next()
 		self.filenames = [self.directory + filename for filename in filenames]
@@ -27,6 +41,9 @@ class ImageNormalizer:
 		self.getImagesMaxSize()
 
 
+	"""
+	Get the sizes of the largest pictures in both directories
+	"""
 	def getImagesMaxSize(self):
 		self.max_width = 0
 		self.max_height = 0
@@ -38,19 +55,33 @@ class ImageNormalizer:
 			self.max_height = height if height >= self.max_height else self.max_height
 
 
-	def resizeImages(self, mode, color = 'black'):
-		self.max_width
-		self.max_height
-
+	"""
+	Resize all images in both directories
+	@param mode The resizing mode to use
+	@param background_color The color used for padding
+	@param shape The shape of the resized picture
+	@param square_size The size of the picture if the shape is SHAPE_SQUARE
+	"""
+	def resizeImages(self, mode, background_color = 'black', shape = SHAPE_SQUARE, square_size = SIZE_AUTO):
 		new_images = []
 
+		if shape == self.SHAPE_SQUARE:
+			if square_size > 0:
+				self.max_width = square_size
+				self.max_height = square_size
+
+			else:
+				self.max_width = max(self.max_width, self.max_height)
+				self.max_height = self.max_width
+
+		
 		if mode == self.MODE_PADDING:
 
 			for im in self.images:
 				image = im['image']
 				new_images.append(im)
 
-				tmp = Image.new(image.mode, (self.max_width, self.max_height), color)
+				tmp = Image.new(image.mode, (self.max_width, self.max_height), background_color)
 				tmp.paste(
 					image,
 					((self.max_width - image.width)/2, (self.max_height - image.height)/2)
@@ -76,37 +107,43 @@ class ImageNormalizer:
 
 		elif mode == self.MODE_RESIZING_KEEP_RATIO:
 
+			max_ratio = float(self.max_width) / self.max_height
+
 			for im in self.images:
 				image = im['image']
 				new_images.append(im)
 
 				# Get right width and height
-				new_height = image.height * self.max_width / image.width # 4000
+				ratio = float(image.width) / image.height
 
-				new_width = image.width * self.max_height / image.height # 500
-
-				if new_height > self.max_height:
-					# Keep new_width
-					
-
-
-				if image.width < image.height:
+				if ratio > max_ratio:
+					# width = width max
 					new_width = self.max_width
-					new_height = image.height * new_width / image.width
+					new_height = new_width / ratio
 
 				else:
+					# height = height max
 					new_height = self.max_height
-					new_width = image.width * new_height / image.height
+					new_width = new_height * ratio
 
-				tmp = image.resize((new_width, new_height), Image.ANTIALIAS)
+
+				tmp_resize = image.resize((int(new_width), int(new_height)), Image.ANTIALIAS)
+
+				tmp = Image.new(image.mode, (self.max_width, self.max_height), background_color)
+				tmp.paste(
+					tmp_resize,
+					((self.max_width - tmp_resize.width)/2, (self.max_height - tmp_resize.height)/2)
+				)
 
 				new_images[-1]['image'] = tmp
 
 			self.images = new_images
 
 
-
-	def convertImagesToGrayscale(self):
+	"""
+	Convert pictures in both directories into grayscale mode
+	"""
+	def convertImages2GrayscaleMode(self):
 		new_images = []
 		for im in self.images:
 			new_images.append(im)
@@ -115,35 +152,71 @@ class ImageNormalizer:
 		self.images = new_images
 
 
+	"""
+	Convert pictures in both directories into RGB mode.
+	Use after convertImages2RGBMode() to get a grayscale picture in RGB mode.
+	"""
+	def convertImages2RGBMode(self):
+		new_images = []
+		for im in self.images:
+			new_images.append(im)
+			new_images[-1]['image'] = im['image'].convert('RGB')
+
+		self.images = new_images
+
+
+	"""
+	Save all images from both directories to the sub folder ./normalized
+	"""
 	def saveImages(self):
 		i = 0
 		for im in self.images:
-			im['image'].save(self.filenames[i] + ".gray", "JPEG")
+			im['image'].save('images/results/' + os.path.basename(self.filenames[i]), 'JPEG')
 			i += 1
 
  
 
 
 def main():
-	imgn = ImageNormalizer('images/')
+	
+	# Pictures folder
+	IMAGE_DIRECTORY = 'images/'
+
+	# Create the normalizer
+	imgn = ImageNormalizer(IMAGE_DIRECTORY)
 
 	# Find all files to manage
 	imgn.loadImagesData()
 
 	# Resize images
-	imgn.resizeImages(ImageNormalizer.MODE_RESIZING_KEEP_RATIO, 'white')
+	imgn.resizeImages(
+		# Resizing mode
+		# Options are: MODE_PADDING, MODE_RESIZING, MODE_RESIZING_KEEP_RATIO
+		mode = ImageNormalizer.MODE_RESIZING_KEEP_RATIO,
+
+		# Background color
+		# Can be a string or a hex code
+		background_color = 'black',
+
+		# Shape of the normalized image
+		# Options are: SHAPE_SQUARE, SHAPE_RECTANGLE
+		shape = ImageNormalizer.SHAPE_SQUARE,
+
+		# Size of the picture if square shape is used
+		# Can be SIZE_AUTO or a integer (in pixels)
+		square_size = ImageNormalizer.SIZE_AUTO
+	)
 
 	# Convert all images to grayscale
-	# imgn.convertImagesToGrayscale()
+	imgn.convertImages2GrayscaleMode()
+
+	# Back to RGB mode
+	imgn.convertImages2RGBMode()
 
 	# Save normalized images
 	imgn.saveImages()
 
 
-
-	# normalize(im, 0, 0, 0, 0, 0)
-
-	
 
 
 if __name__== "__main__":
