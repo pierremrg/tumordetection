@@ -16,25 +16,35 @@ class ImageNormalizer:
 	"""
 	Create a new image normalizer
 
-	@params directory The pictures folder. Two sub-folders should be inside:
+	@params from_directory The pictures folder. Two sub-folders should be inside:
 		one called "yes" and another one called "no"
+	@params to_directory The destination folder, where to solve new pictures
 	"""
-	def __init__(self, directory):
-		self.directory = directory
+	def __init__(self, from_directory, to_directory):
+		self.from_directory = from_directory
+		self.to_directory = to_directory
 		self.images = []
 
 	"""
 	Load the pictures and get their data (filename, picture, sizes)
 	"""
 	def loadImagesData(self):
-		(dirpath, dirnames, filenames) = walk(self.directory).next()
-		self.filenames = [self.directory + filename for filename in filenames]
+		(_, _, yes_filenames) = walk(self.from_directory + 'yes/').next()
+		(_, _, no_filenames) = walk(self.from_directory + 'no/').next()
 
 		# Load images here to prevent multiple loadings
-		for filename in self.filenames:
+		for filename in yes_filenames:
 			self.images.append({
 				'filename': filename,
-				'image': Image.open(filename)
+				'label': 'yes',
+				'image': Image.open(self.from_directory + 'yes/' + filename)
+			})
+
+		for filename in no_filenames:
+			self.images.append({
+				'filename': filename,
+				'label': 'no',
+				'image': Image.open(self.from_directory + 'no/' + filename)
 			})
 
 		# Get max width and max height
@@ -169,21 +179,34 @@ class ImageNormalizer:
 	Save all images from both directories to the sub folder ./normalized
 	"""
 	def saveImages(self):
-		i = 0
-		for im in self.images:
-			im['image'].save('images/results/' + os.path.basename(self.filenames[i]), 'JPEG')
-			i += 1
+		# Create the folders if needed
+		if not os.path.exists(self.to_directory):
+			os.makedirs(self.to_directory)
 
- 
+		if not os.path.exists(self.to_directory + 'yes/'):
+			os.makedirs(self.to_directory + 'yes/')
+
+		if not os.path.exists(self.to_directory + 'no/'):
+			os.makedirs(self.to_directory + 'no/')
+
+
+		for im in self.images:
+			if im['label'] == 'yes':
+				im['image'].save(self.to_directory + 'yes/' + im['filename'], 'JPEG')
+
+			elif im['label'] == 'no':
+				im['image'].save(self.to_directory + 'no/' + im['filename'], 'JPEG')
+
 
 
 def main():
 	
 	# Pictures folder
-	IMAGE_DIRECTORY = 'images/'
+	IMAGES_FROM_DIRECTORY = 'images/'
+	IMAGES_TO_DIRECTORY = 'results/'
 
 	# Create the normalizer
-	imgn = ImageNormalizer(IMAGE_DIRECTORY)
+	imgn = ImageNormalizer(IMAGES_FROM_DIRECTORY, IMAGES_TO_DIRECTORY)
 
 	# Find all files to manage
 	imgn.loadImagesData()
