@@ -8,7 +8,7 @@ app.config["DEBUG"] = True
 @app.route('/', methods=['GET'])
 def home():
     return '''<h1>Services web disponibles</h1>
-<p>Transformer une image en matrice /api/v1/transform?path=[PATH_PICTURE]</p>'''
+    <p>Transformer une image en matrice /api/v1/transform?path=[PATH_PICTURE]</p>'''
 
 @app.route('/api/v1/transform', methods=['GET'])
 def transform_picture():
@@ -21,7 +21,6 @@ def transform_picture():
         return "Error: No path field provided. Please specify a path."
     try:
         im = Image.open(path)
-        #break
     except IOError:
         return "No picture at the specified path"
     
