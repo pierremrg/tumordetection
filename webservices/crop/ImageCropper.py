@@ -73,29 +73,3 @@ class ImageCropper:
 				
 				# write the image to disk
 				cv2.imwrite(os.path.join(self.output_folder, dir, filename), img_crop)
-
-
-def main():
-
-	# check the number of arguments
-	if len(sys.argv) != 3:
-		print("Error expected 2 arguments but got "+str(len(sys.argv)-1)+" instead!")
-		print("Expected arguments: dataset\ output_folder\\")
-		exit(0)
-		
-	INPUT_DIRECTORY = sys.argv[1]
-	OUTPUT_DIRECTORY = sys.argv[2]
-	DIRS = ["yes", "no"]
-
-	# creates the cropper object
-	imgc = ImageCropper(INPUT_DIRECTORY, OUTPUT_DIRECTORY, DIRS)
-	
-	# creates the output folders
-	imgc.createOutputDirectory()
-	
-	# does the job
-	imgc.cropImages()
-	
-	
-if __name__ == "__main__":
-	main()
