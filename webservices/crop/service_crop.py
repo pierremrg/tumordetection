@@ -9,8 +9,6 @@ app.config["DEBUG"] = True
 
 @app.route('/api/v1/crop', methods=['GET'])
 def crop():
-	print("Toto:", request.args.get('test') )
-
 	# Check pictures folders
 	if request.args.get('from') is None:
 		return 'No "from" directory given.'

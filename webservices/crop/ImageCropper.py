@@ -4,6 +4,10 @@ import cv2
 import os
 import sys
 
+#logger = logging.getLogger()
+#logger.addHandler(stream_handler)
+#logger.setLevel(logging.DEBUG)
+
 class ImageCropper:
 	# init
 	def __init__(self, input_folder, output_folder, dirs):
@@ -32,12 +36,12 @@ class ImageCropper:
 	
 		for dir in self.dirs:
 			for filename in os.listdir(os.path.join(self.input_folder, dir)):
-				print(filename)
+				#print(filename)
 				image = cv2.imread(os.path.join(self.input_folder, dir, filename))
 
 				# the file couldn't be read as an image or doesn't exist
 				if (image is None):
-					print("Error opening the file, skipping "+filename)
+					#print("Error opening the file, skipping "+filename)
 					continue
 				
 				# image is converted to grayscale and slightly blurred
