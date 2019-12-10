@@ -25,7 +25,6 @@ def transform_picture():
         return "Error: No path field provided. Please specify a path."
     try:
         im = Image.open(path)
-        #break
     except IOError:
         return "No picture at the specified path"
     
