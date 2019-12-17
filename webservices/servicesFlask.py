@@ -1,12 +1,16 @@
 import flask
 from flask import request
 from PIL import Image
+import sys
+import logging
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 @app.route('/', methods=['GET'])
 def home():
+    logging.basicConfig(level = logging.DEBUG)
+    logging.info('Message de log') 
     return '''<h1>Services web disponibles</h1>
     <p>Transformer une image en matrice /api/v1/transform?path=[PATH_PICTURE]</p>'''
 
