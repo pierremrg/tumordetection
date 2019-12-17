@@ -29,8 +29,11 @@ class ImageNormalizer:
 	Load the pictures and get their data (filename, picture, sizes)
 	"""
 	def loadImagesData(self):
-		(_, _, yes_filenames) = walk(self.from_directory + 'yes/').next()
-		(_, _, no_filenames) = walk(self.from_directory + 'no/').next()
+		#(_, _, yes_filenames) = walk(self.from_directory + 'yes/').next()
+		#(_, _, no_filenames) = walk(self.from_directory + 'no/').next()
+
+		yes_filenames = os.listdir(self.from_directory + 'yes/')
+		no_filenames = os.listdir(self.from_directory + 'no/')
 
 		# Load images here to prevent multiple loadings
 		for filename in yes_filenames:
@@ -94,7 +97,7 @@ class ImageNormalizer:
 				tmp = Image.new(image.mode, (self.max_width, self.max_height), background_color)
 				tmp.paste(
 					image,
-					((self.max_width - image.width)/2, (self.max_height - image.height)/2)
+					(int((self.max_width - image.width))/2, int((self.max_height - image.height)/2))
 				)
 
 				new_images[-1]['image'] = tmp
@@ -142,7 +145,7 @@ class ImageNormalizer:
 				tmp = Image.new(image.mode, (self.max_width, self.max_height), background_color)
 				tmp.paste(
 					tmp_resize,
-					((self.max_width - tmp_resize.width)/2, (self.max_height - tmp_resize.height)/2)
+					(int((self.max_width - tmp_resize.width)/2), int((self.max_height - tmp_resize.height)/2))
 				)
 
 				new_images[-1]['image'] = tmp
