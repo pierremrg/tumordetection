@@ -1,0 +1,12 @@
+https://medium.com/@mohamedalihabib7/brain-tumor-detection-using-convolutional-neural-networks-30ccef6612b0
+
+Essayer les modèles pré entrainer avec fastai : https://docs.fast.ai/vision.models.html (on peut s'en passer)(Fastai est bien pour trouver les meilleurs parametres)
+Essayer les modèles pré entrainer PyTorchHub : https://pytorch.org/hub/research-models
+
+Transfer Learning Pytorch :
+A lire : https://meritis.fr/ia/methodes-de-transfer-learning/
+
+https://towardsdatascience.com/a-practical-example-in-transfer-learning-with-pytorch-846bb835f2db
+https://medium.com/analytics-vidhya/transfer-learning-in-pytorch-f7736598b1ed
+https://towardsdatascience.com/transfer-learning-with-convolutional-neural-networks-in-pytorch-dd09190245ce
+https://stackabuse.com/image-classification-with-transfer-learning-and-pytorch/
