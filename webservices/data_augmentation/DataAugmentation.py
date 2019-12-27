@@ -25,10 +25,44 @@ class DataAugmentation():
         logging.info('data_augmentation.init')
         
         self.directory_from = directory_from
-        self.directory_to = directory_to
+        
+        if (directory_to != None):
+            self.directory_to = directory_to
+            self.createOutputDirectory()
+            self.copy_file()
+        else:
+            self.directory_to = directory_from
+            
         self.MAX_AUGMENTATION = max_augmentation
         self.COEF_ROTATION = coef_rotation
 
+    def createOutputDirectory(self):
+        try:
+            os.mkdir(self.directory_to)
+        except:
+            logging.info(self.directory_to+" already exists")
+
+        for dir in ['yes', 'no']:
+            try:
+                os.mkdir(os.path.join(self.directory_to, dir))
+            except:
+                logging.info(os.path.join(self.directory_to, dir)+" already exists")
+    
+    def copy_file(self):
+        images = os.listdir(self.directory_from + 'yes')
+        for name in images:
+            img = Image.open(self.directory_from + 'yes/' + name)
+            img_name = img.filename.split('/')[-1]
+            img = img.convert('RGB')
+            img.save(self.directory_to + 'yes/' + img_name, format='jpeg')
+        
+        images = os.listdir(self.directory_from + 'no')
+        for name in images:
+            img = Image.open(self.directory_from + 'no/' + name)
+            img_name = img.filename.split('/')[-1]
+            img = img.convert('RGB')
+            img.save(self.directory_to + 'no/' + img_name, format='jpeg')
+                
     """
     Check if it is needed to equilibrate the dataset
     """   
@@ -47,12 +81,10 @@ class DataAugmentation():
             logging.info('No need of augmentation')
         elif ratio <= 1:
             nb_img_to_add = nb_no - nb_yes
-            directory_to_add = self.directory_from + 'yes/'
-            self.compute_equilibrate(image_yes, directory_to_add, nb_img_to_add)
+            self.compute_equilibrate(image_yes, 'yes/', nb_img_to_add)
         elif ratio >= 1:
             nb_img_to_add = nb_yes - nb_no
-            directory_to_add = self.directory_from + 'no/'
-            self.compute_equilibrate(image_no, directory_to_add, nb_img_to_add)        
+            self.compute_equilibrate(image_no, 'no/', nb_img_to_add)        
         
     """
         Equilibrate the dataset
@@ -62,7 +94,7 @@ class DataAugmentation():
     """
     def compute_equilibrate(self, img_sources, directory_to_add, nb_img_to_add):
         logging.info('data_augmentation.compute_equilibrate')
-        logging.info('Adding %i images to %s', nb_img_to_add, directory_to_add)
+        logging.info('Adding %i images to %s', nb_img_to_add, self.directory_to + directory_to_add)
         
         if nb_img_to_add > len(img_sources):
             logging.info('Not enough images in source, adding %i images', len(img_sources))
@@ -78,10 +110,11 @@ class DataAugmentation():
     @param directory : directory where the images are added
     """    
     def compute_flip(self, img_name, directory):        
-        img = Image.open(directory + img_name)
+        img = Image.open(self.directory_from + directory + img_name)
         new_img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        new_name = os.path.splitext(img.filename)[0] + '_flip.jpg'
-        new_img.save(new_name, format='jpeg')
+        img_name = os.path.splitext(img.filename)[0].split('/')[-1]
+        new_name = img_name + '_flip.jpg'
+        new_img.save(self.directory_to + directory + new_name, format='jpeg')
     
         return new_name   
     
@@ -92,20 +125,20 @@ class DataAugmentation():
     
     def perform_rotate(self):
         logging.info('data_augmentation.perform_rotate')
-        directory_yes = os.listdir(self.directory_from + 'yes')
-        directory_no = os.listdir(self.directory_from + 'no')
+        directory_yes = os.listdir(self.directory_to + 'yes')
+        directory_no = os.listdir(self.directory_to + 'no')
         
         nb_yes = len(directory_yes)
         nb_no = len(directory_no)
         
          # augmentation des yes
-        images_yes = os.listdir(self.directory_from + 'yes')   
+        images_yes = os.listdir(self.directory_to + 'yes')   
         nb_images_yes_to_add = self.MAX_AUGMENTATION * self.COEF_ROTATION - nb_yes
         nb_rotations = int(nb_images_yes_to_add/nb_yes)+1
         
         current_image_rotated = 0
         while nb_images_yes_to_add > 0:
-            img = Image.open(self.directory_from + "/yes/" + images_yes[current_image_rotated])
+            img = Image.open(self.directory_to + "/yes/" + images_yes[current_image_rotated])
             filenameToSave = os.path.splitext(img.filename)[0]
             img = img.convert("RGB")
             for i in range(nb_rotations):
@@ -122,13 +155,13 @@ class DataAugmentation():
             current_image_rotated += 1
             
          # augmentation des no
-        images_no = os.listdir(self.directory_from + 'no')   
+        images_no = os.listdir(self.directory_to + 'no')   
         nb_images_no_to_add = self.MAX_AUGMENTATION * self.COEF_ROTATION - nb_no
         nb_rotations = int(nb_images_no_to_add/nb_no)+1
         
         current_image_rotated = 0
         while nb_images_no_to_add > 0:
-            img = Image.open(self.directory_from + "/no/" + images_no[current_image_rotated])
+            img = Image.open(self.directory_to + "/no/" + images_no[current_image_rotated])
             filenameToSave = os.path.splitext(img.filename)[0]
             img = img.convert("RGB")
 
@@ -147,20 +180,20 @@ class DataAugmentation():
     
     def apply_filters(self):
         logging.info('data_augmentation.apply_filters')
-        directory_yes = os.listdir(self.directory_from + 'yes')
-        directory_no = os.listdir(self.directory_from + 'no')
+        directory_yes = os.listdir(self.directory_to + 'yes')
+        directory_no = os.listdir(self.directory_to + 'no')
         
         nb_yes = len(directory_yes)
         nb_no = len(directory_no)
         
         # augmentation des yes
-        images_yes = os.listdir(self.directory_from + 'yes')   
+        images_yes = os.listdir(self.directory_to + 'yes')   
         nb_images_yes_to_add = self.MAX_AUGMENTATION - nb_yes
         
         
         while nb_images_yes_to_add > 0:
             
-            img = Image.open(self.directory_from + "/yes/" + images_yes[np.random.randint(0, nb_yes-1)])
+            img = Image.open(self.directory_to + "/yes/" + images_yes[np.random.randint(0, nb_yes-1)])
             filenameToSave = os.path.splitext(img.filename)[0]
             img = img.convert("RGB")
             filterToApply = np.random.randint(0, 3)
@@ -199,12 +232,12 @@ class DataAugmentation():
                 logging.info('apply_filters.save_failed')
               
         # augmentation des no
-        images_no = os.listdir(self.directory_from + 'no')   
+        images_no = os.listdir(self.directory_to + 'no')   
         nb_images_no_to_add = self.MAX_AUGMENTATION - nb_no
         
         
         while nb_images_no_to_add > 0:
-            img = Image.open(self.directory_from + "/no/" + images_no[np.random.randint(0, nb_no-1)])
+            img = Image.open(self.directory_to + "/no/" + images_no[np.random.randint(0, nb_no-1)])
             filenameToSave = os.path.splitext(img.filename)[0]
             img = img.convert("RGB")
             filterToApply = np.random.randint(0, 3)
