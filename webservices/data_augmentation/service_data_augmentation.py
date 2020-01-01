@@ -29,9 +29,6 @@ def data_augment() :
 
     if request.args.get('directory_to') is not None :
         directory_to = request.args.get('directory_to')
-
-        if not os.path.exists(directory_to):
-            return '"directory_to" cannot be found.'
     else:
         directory_to = None
 
