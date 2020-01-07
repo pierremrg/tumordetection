@@ -12,7 +12,7 @@ class PictureGetter:
         logging.info('get_picture.init')
 
     def run(self):
-        url = 'https://docs.google.com/uc?export=download&id=1ZiT1jsKT6WQ0UwD3eGKOCxpekSY2iVQV'
+        url = 'https://docs.google.com/uc?export=download&id=1J1HAp--v1XF4qkEwkS0lrLG49Jic2HaF'
         wget.download(url, '../../')
         logging.info('Zip téléchargé')
         with zipfile.ZipFile('../../irm_images.zip', 'r') as zip_ref:
