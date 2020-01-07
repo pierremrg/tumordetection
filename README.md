@@ -1,8 +1,6 @@
 # Tumor detection
 
-## Requirement for Docker containers
-
-### Crop image service
+## Requirements for services:
 
 - pip3 install imutils
 - pip3 install numpy
