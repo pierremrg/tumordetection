@@ -114,6 +114,7 @@ class DataAugmentation():
         new_img = img.transpose(Image.FLIP_LEFT_RIGHT)
         img_name = os.path.splitext(img.filename)[0].split('/')[-1]
         new_name = img_name + '_flip.jpg'
+        new_img = new_img.convert("RGB")
         new_img.save(self.directory_to + directory + new_name, format='jpeg')
     
         return new_name   
