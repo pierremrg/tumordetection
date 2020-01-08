@@ -59,7 +59,7 @@ class Orchestration():
 			URL = "http://127.0.0.1:5004/api/v1/medium_cnn"
 			PARAMS = {'images_directory': dir_from, 'save_directory': dir_to, 'batch_size': self.batch_size, 'epochs': self.epochs}
 			r = requests.post(url = URL, params = PARAMS) 
-		elif self.algo == "alexnet" || self.algo == "resnet" || self.algo == "vgg":
+		elif self.algo == "alexnet" or self.algo == "resnet" or self.algo == "vgg":
 			#URL service transferlearning 
 			URL = "http://127.0.0.1:5005/api/v1/transferlearning"
 			PARAMS = {'images_directory': dir_from, 'save_directory': dir_to, 'batch_size': self.batch_size, 'network': self.algo}
