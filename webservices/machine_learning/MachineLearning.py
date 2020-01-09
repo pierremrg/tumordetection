@@ -1,7 +1,17 @@
 from PIL import Image
 import os
 import numpy as np
+
+# Logging
 import logging
+formatter = logging.Formatter(fmt = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger = logging.getLogger()
+logger.addHandler(stream_handler)
+logger.setLevel(logging.DEBUG)
+
 
 # Dask distributed computing
 import joblib
@@ -19,13 +29,35 @@ from sklearn.model_selection import GridSearchCV
 class MachineLearning():
 
 	# reads images and stores them
-	def __init__(self, input_folder):
+	def __init__(self, input_folder, img_folder):
 		self.input_folder = input_folder
-		self.imgs, self.labels = read_images(self.input_folder)
+		self.imgs, self.labels = self.read_images(input_folder, 240)
+		self.img = self.read_image(img_folder, 240)
 		
+	def read_image(self, path, img_size = 0):
+		logging.info('read_images')
+		img = 0
+	
+		try:
+			img = Image.open(path)
+			if img_size != 0:
+				img = img.resize((img_size, img_size))
+			img = img.convert('L').convert('RGB')
+			img = np.asarray(img).flatten()
+				
+		except IOError as err:
+			logging.error("Error reading image or path")
+			logging.error(err)
+
+		except Exception as err:
+			logging.error("Unkownown error in read_image")
+			logging.error(err)
+
+		return img
+	
 	# reads images from a directory and resizes them
 	# returns the list of images and list of labels
-	def read_images(directory, img_size = 0):
+	def read_images(self, directory, img_size = 0):
 		list_img = []
 		labels = []
 		logging.info('read_images')
@@ -37,8 +69,7 @@ class MachineLearning():
 				img = Image.open(directory + 'yes/'+ name)
 				if img_size != 0:
 					img = img.resize((img_size, img_size))
-				if directory == DIRECTORY_RAW:
-					img = img.convert('L').convert('RGB')
+				img = img.convert('L').convert('RGB')
 				list_img.append(np.asarray(img).flatten())
 				labels.append(1)
 				
@@ -48,12 +79,11 @@ class MachineLearning():
 				img = Image.open(directory + 'no/'+ name)
 				if img_size != 0:
 					img = img.resize((img_size, img_size))
-				if directory == DIRECTORY_RAW:
-					img = img.convert('L').convert('RGB')
+				img = img.convert('L').convert('RGB')
 				list_img.append(np.asarray(img).flatten())
 				labels.append(0)
 				
-		except Exception as e:
+		except Exception as err:
 			logging.error("Error in read_images")
 			logging.error(err)
 			list_img = []
@@ -63,7 +93,7 @@ class MachineLearning():
 		
 	# finds the best k-NN configuration for a given dataset
 	# returns the best score and its associated arguments
-	def best_knn(imgs, labels):
+	def best_knn(self, imgs, labels):
 		logging.info("Finding best k-NN: This may take a while..")
 		knn = KNeighborsClassifier(n_jobs=-1)
 		grid = {
@@ -80,8 +110,8 @@ class MachineLearning():
 	# trains a k-NearestNeighbors algorithm and returns a prediction
 	# if fast_train is disabled: best k-NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
-	def knn(img, imgs, labels, fast_train):
-		if(!fast_train):
+	def knn(self, img, imgs, labels, fast_train):
+		if not(fast_train):
 			_, params = best_knn(imgs, labels)
 		else:
 			params = {'k': '3'}
@@ -95,7 +125,7 @@ class MachineLearning():
 
 	# finds the best SVM configuration for a given dataset
 	# returns the best score and its associated arguments
-	def best_SVM(imgs, labels):
+	def best_SVM(self, imgs, labels):
 		svm = SVC(gamma='auto', random_state=0, probability=True)
 		grid = {
 			'kernel': ['poly', 'linear', 'rbf', 'sigmoid'],
@@ -114,8 +144,8 @@ class MachineLearning():
 	# trains a Support Vector Machine algorithm and returns a prediction
 	# if fast_train is disabled: best SVM is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
-	def svm(img, imgs, labels, fast_train):
-		if(!fast_train):
+	def svm(self, img, imgs, labels, fast_train):
+		if not(fast_train):
 			_, params = best_SVM(imgs, labels)
 		else:
 			params = {
@@ -125,14 +155,14 @@ class MachineLearning():
 	
 		logging.info("Using SVM with the following parameters:")
 		logging.info(params)
-		model = = SVC(**params, gamma='auto', random_state=0, probability=True)
+		model = SVC(**params, gamma='auto', random_state=0, probability=True)
 		model.fit(imgs, labels)
 
-		return model.predict(img)
+		return model.predict([img])[0]
 		
 	# finds the best GBC configuration for a given dataset
 	# returns the best score and its associated arguments
-	def best_GBC(imgs, labels):
+	def best_GBC(self, imgs, labels):
 		gbc = GradientBoostingClassifier()
 		grid = {
 			"loss":["deviance"],
@@ -157,8 +187,8 @@ class MachineLearning():
 	# trains a Gradient Boosting Classifier algorithm and returns a prediction
 	# if fast_train is disabled: best GBC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
-	def gbc(img, imgs, labels, fast_train):
-		if(!fast_train):
+	def gbc(self, img, imgs, labels, fast_train):
+		if not(fast_train):
 			_, params = best_GBC(imgs, labels)
 		else:
 			params = {
@@ -174,7 +204,7 @@ class MachineLearning():
 
 	# finds the best RFC configuration for a given dataset
 	# returns the best score and its associated arguments
-	def best_RFC(imgs, labels):
+	def best_RFC(self, imgs, labels):
 		rfc = RandomForestClassifier(n_estimators = 500)
 		grid = {
 			"max_depth": [i for i in range(4, 12)],
@@ -193,8 +223,8 @@ class MachineLearning():
 	# trains a Random Forest Classifier algorithm and returns a prediction
 	# if fast_train is disabled: best RFC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
-	def rfc(img, imgs, labels, fast_train):
-		if(!fast_train):
+	def rfc(self, img, imgs, labels, fast_train):
+		if not(fast_train):
 			_, params = best_RFC(imgs, labels)
 		else:
 			params = {
@@ -212,7 +242,7 @@ class MachineLearning():
 		
 	# finds the best FC neural network configuration for a given dataset
 	# returns the best score and its associated arguments
-	def best_NN(imgs, labels):
+	def best_NN(self, imgs, labels):
 		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
 		nb_layers = [2,5,8,12,20] # Number of hidden layers
 		nn = neural_network.MLPClassifier()
@@ -231,8 +261,8 @@ class MachineLearning():
 	# trains a fully connected Neural Network algorithm and returns a prediction
 	# if fast_train is disabled: best NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
-	def nn(img, imgs, labels, fast_train):
-		if(!fast_train):
+	def nn(self, img, imgs, labels, fast_train):
+		if not(fast_train):
 			_, params = best_NN(imgs, labels)
 		else:
 			params = {
