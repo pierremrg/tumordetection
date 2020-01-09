@@ -35,7 +35,7 @@ class ClassMediumCNN():
     def initDataLoader(self):
         logging.info('ClassMediumCNN.initDataLoader')
 
-        transform = transform = transforms.Compose([
+        transform = transforms.Compose([
                            transforms.ToTensor()                         
                        ])
         self.train_loader, self.val_loader = create_dataloader(self.images_directory, 
