@@ -2,6 +2,7 @@ import flask
 from flask import request
 import os
 import pandas as pd
+from hdfs import InsecureClient
 
 from DataAugmentation import DataAugmentation
 
@@ -9,13 +10,16 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 def create_csv(directory_to):
-    list_yes = os.listdir(directory_to + 'yes')
+    hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+    list_yes = hdfs_client.list('/' + directory_to + 'yes')
     list_images = ['yes/' + name for name in list_yes]
-    list_no = os.listdir(directory_to + 'no/')
+    list_no = hdfs_client.list('/' + directory_to + 'no/')
     list_images += ['no/' + name for name in list_no]
 
     data = pd.DataFrame(list_images, columns=['Path'])
-    data.to_csv(directory_to + 'data.csv', index_label='index')
+
+    with hdfs_client.write('/' + directory_to + 'data.csv', encoding = 'utf-8') as writer:
+    	data.to_csv(writer, index_label='index')
 
 @app.route('/api/v1/data_augment', methods=['POST'])
 def data_augment() :
@@ -28,9 +32,6 @@ def data_augment() :
 
     directory_from = request.args.get('directory_from')
     max_augmentation =  int(request.args.get('max_augmentation'))
-
-    if not os.path.exists(directory_from):
-        return '"directory_from" cannot be found.'
 
     if request.args.get('coef_rotation') is not None:
         coef_rotation = float(request.args.get('coef_rotation'))

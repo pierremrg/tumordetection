@@ -1,9 +1,11 @@
 import os
 import logging
+import shutil
 import numpy as np
 from PIL import Image
 from PIL import ImageFilter
 from PIL import ImageEnhance
+from hdfs import InsecureClient
 
 
 formatter = logging.Formatter(fmt = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
@@ -12,7 +14,9 @@ stream_handler.setFormatter(formatter)
 
 logger = logging.getLogger()
 logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 
 class DataAugmentation():
     """
@@ -28,40 +32,19 @@ class DataAugmentation():
         
         if (directory_to != None):
             self.directory_to = directory_to
-            self.createOutputDirectory()
             self.copy_file()
         else:
             self.directory_to = directory_from
-            
+        
         self.MAX_AUGMENTATION = max_augmentation
         self.COEF_ROTATION = coef_rotation
-
-    def createOutputDirectory(self):
-        try:
-            os.mkdir(self.directory_to)
-        except:
-            logging.info(self.directory_to+" already exists")
-
-        for dir in ['yes', 'no']:
-            try:
-                os.mkdir(os.path.join(self.directory_to, dir))
-            except:
-                logging.info(os.path.join(self.directory_to, dir)+" already exists")
     
     def copy_file(self):
-        images = os.listdir(self.directory_from + 'yes')
-        for name in images:
-            img = Image.open(self.directory_from + 'yes/' + name)
-            img_name = img.filename.split('/')[-1]
-            img = img.convert('RGB')
-            img.save(self.directory_to + 'yes/' + img_name, format='jpeg')
-        
-        images = os.listdir(self.directory_from + 'no')
-        for name in images:
-            img = Image.open(self.directory_from + 'no/' + name)
-            img_name = img.filename.split('/')[-1]
-            img = img.convert('RGB')
-            img.save(self.directory_to + 'no/' + img_name, format='jpeg')
+        logging.info('data_augmentation.copy_file')
+        hdfs_client.download('/' + self.directory_from, '')
+        os.remove('data/data.csv')
+        hdfs_client.upload('/' + self.directory_to, self.directory_from)
+        shutil.rmtree(self.directory_from)	
                 
     """
     Check if it is needed to equilibrate the dataset
@@ -69,8 +52,8 @@ class DataAugmentation():
     def equilibrate(self):
         logging.info('data_augmentation.equilibrate')
         
-        image_yes = os.listdir(self.directory_from + 'yes')
-        image_no = os.listdir(self.directory_from + 'no')
+        image_yes = hdfs_client.list('/' + self.directory_from + 'yes')
+        image_no = hdfs_client.list('/' + self.directory_from + 'no')
         
         nb_yes = len(image_yes)
         nb_no = len(image_no)
@@ -109,13 +92,17 @@ class DataAugmentation():
     @param img_name : name of the image used 
     @param directory : directory where the images are added
     """    
-    def compute_flip(self, img_name, directory):        
-        img = Image.open(self.directory_from + directory + img_name)
+    def compute_flip(self, img_name, directory):
+        with hdfs_client.read('/' + self.directory_from + directory + img_name) as reader:        
+            img = Image.open(reader)
         new_img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        img_name = os.path.splitext(img.filename)[0].split('/')[-1]
+        """img_name = os.path.splitext(img.filename)[0].split('/')[-1]"""
+        img_name = img_name.split('.')[0]
         new_name = img_name + '_flip.jpg'
         new_img = new_img.convert("RGB")
-        new_img.save(self.directory_to + directory + new_name, format='jpeg')
+        new_img.save(new_name, format='jpeg')
+        hdfs_client.upload('/' + self.directory_to + directory + new_name, new_name)
+        os.remove(new_name)
     
         return new_name   
     
@@ -126,28 +113,37 @@ class DataAugmentation():
     
     def perform_rotate(self):
         logging.info('data_augmentation.perform_rotate')
-        directory_yes = os.listdir(self.directory_to + 'yes')
-        directory_no = os.listdir(self.directory_to + 'no')
+        directory_yes = hdfs_client.list('/' + self.directory_from + 'yes')
+        directory_no = hdfs_client.list('/' + self.directory_from + 'no')
         
         nb_yes = len(directory_yes)
         nb_no = len(directory_no)
         
          # augmentation des yes
-        images_yes = os.listdir(self.directory_to + 'yes')   
+        images_yes = hdfs_client.list('/' + self.directory_from + 'yes')
         nb_images_yes_to_add = self.MAX_AUGMENTATION * self.COEF_ROTATION - nb_yes
         nb_rotations = int(nb_images_yes_to_add/nb_yes)+1
         
         current_image_rotated = 0
         while nb_images_yes_to_add > 0:
-            img = Image.open(self.directory_to + "/yes/" + images_yes[current_image_rotated])
-            filenameToSave = os.path.splitext(img.filename)[0]
+            img_name = images_yes[current_image_rotated]
+            with hdfs_client.read('/' + self.directory_to + 'yes/' + img_name) as reader:
+                img = Image.open(reader)
+            filenameToSave = img_name.split('.')[0]
             img = img.convert("RGB")
+            previous_dg = [0]
             for i in range(nb_rotations):
                 dg = np.random.randint(-45, 45, 1)
+                while(dg in previous_dg):
+                    dg = np.random.randint(-45, 45, 1)
+                previous_dg.append(dg)
                 new_img = img.rotate(dg, expand=True)
                 new_name = filenameToSave + '_rotate' + str(dg) + ".jpg"
+
                 try:
                     new_img.save(new_name, format='jpeg')
+                    hdfs_client.upload('/' + self.directory_to + 'yes/' +  new_name, new_name)
+                    os.remove(new_name)
                     nb_images_yes_to_add -= 1
 
                 except IOError :
@@ -156,22 +152,30 @@ class DataAugmentation():
             current_image_rotated += 1
             
          # augmentation des no
-        images_no = os.listdir(self.directory_to + 'no')   
+        images_no = hdfs_client.list('/'+ self.directory_to + 'no')   
         nb_images_no_to_add = self.MAX_AUGMENTATION * self.COEF_ROTATION - nb_no
         nb_rotations = int(nb_images_no_to_add/nb_no)+1
         
         current_image_rotated = 0
         while nb_images_no_to_add > 0:
-            img = Image.open(self.directory_to + "/no/" + images_no[current_image_rotated])
-            filenameToSave = os.path.splitext(img.filename)[0]
-            img = img.convert("RGB")
+            img_name = images_no[current_image_rotated]
+            with hdfs_client.read('/' + self.directory_to + 'no/' + img_name) as reader:
+                img = Image.open(reader)
 
+            filenameToSave = img_name.split('.')[0]
+            img = img.convert("RGB")
+            previous_dg = []
             for i in range(nb_rotations):
                 dg = np.random.randint(-45, 45, 1)
+                while(dg in previous_dg):
+                    dg = np.random.randint(-45, 45, 1)
+                previous_dg.append(dg)
                 new_img = img.rotate(dg, expand=True)
                 new_name = filenameToSave + '_rotate' + str(dg) + ".jpg"
                 try:
                     new_img.save(new_name, format='jpeg')
+                    hdfs_client.upload('/' + self.directory_to + 'no/' + new_name, new_name)
+                    os.remove(new_name)
                     nb_images_no_to_add -= 1
                 except IOError :
                     logging.info('perform_rotate.save_failed')
@@ -181,24 +185,32 @@ class DataAugmentation():
     
     def apply_filters(self):
         logging.info('data_augmentation.apply_filters')
-        directory_yes = os.listdir(self.directory_to + 'yes')
-        directory_no = os.listdir(self.directory_to + 'no')
+        directory_yes = hdfs_client.list('/' + self.directory_to + 'yes')
+        directory_no = hdfs_client.list('/' + self.directory_to + 'no')
         
         nb_yes = len(directory_yes)
         nb_no = len(directory_no)
         
         # augmentation des yes
-        images_yes = os.listdir(self.directory_to + 'yes')   
+        images_yes = hdfs_client.list('/' + self.directory_to + 'yes') 
+        dict_yes = dict((name, []) for name in images_yes)  
         nb_images_yes_to_add = self.MAX_AUGMENTATION - nb_yes
         
         
         while nb_images_yes_to_add > 0:
-            
-            img = Image.open(self.directory_to + "/yes/" + images_yes[np.random.randint(0, nb_yes-1)])
-            filenameToSave = os.path.splitext(img.filename)[0]
+            img_name = images_yes[np.random.randint(0, len(images_yes)-1)]
+            with hdfs_client.read('/' + self.directory_to + 'yes/' + img_name) as reader:            
+                img = Image.open(reader)
+
+            filenameToSave = img_name.split('.')[0]
             img = img.convert("RGB")
             filterToApply = np.random.randint(0, 3)
-            
+            while (filterToApply in dict_yes[img_name]):
+                filterToApply = np.random.randint(0, 3)
+            dict_yes[img_name].append(filterToApply)
+            if len(dict_yes[img_name]) == 3:
+                images_yes.remove(img_name)
+          
             if filterToApply == 0:
                 # appliquer mirrorTB
                 new_name = filenameToSave + "_mirrorTB.jpg"
@@ -228,20 +240,31 @@ class DataAugmentation():
                 
             try:
                 new_img.save(new_name, format='jpeg')
+                hdfs_client.upload('/' + self.directory_to + 'yes/' + new_name, new_name)
+                os.remove(new_name)
                 nb_images_yes_to_add -= 1                
             except IOError :
                 logging.info('apply_filters.save_failed')
               
         # augmentation des no
-        images_no = os.listdir(self.directory_to + 'no')   
+        images_no = hdfs_client.list('/' + self.directory_to + 'no')
+        dict_no = dict((name, []) for name in images_no)   
         nb_images_no_to_add = self.MAX_AUGMENTATION - nb_no
         
         
         while nb_images_no_to_add > 0:
-            img = Image.open(self.directory_to + "/no/" + images_no[np.random.randint(0, nb_no-1)])
-            filenameToSave = os.path.splitext(img.filename)[0]
+            img_name = images_no[np.random.randint(0, len(images_no)-1)]
+            with hdfs_client.read('/' + self.directory_to + 'no/' + img_name) as reader:  
+                img = Image.open(reader)
+
+            filenameToSave = img_name.split('.')[0]
             img = img.convert("RGB")
             filterToApply = np.random.randint(0, 3)
+            while (filterToApply in dict_no[img_name]):
+                filterToApply = np.random.randint(0, 3)
+            dict_no[img_name].append(filterToApply)
+            if len(dict_no[img_name]) == 3:
+                images_no.remove(img_name)
             
             if filterToApply == 0:
                 # appliquer mirrorTB
@@ -272,6 +295,8 @@ class DataAugmentation():
                 
             try:
                 new_img.save(new_name, format='jpeg')
+                hdfs_client.upload('/' + self.directory_to + 'no/' + new_name, new_name)
+                os.remove(new_name)
                 nb_images_no_to_add -= 1                
             except IOError :
                 logging.info('apply_filters.save_failed')

@@ -1,6 +1,6 @@
 import wget, zipfile, os, logging
 
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level = logging.INFO)
 
 class PictureGetter:
     
@@ -17,22 +17,22 @@ class PictureGetter:
 
     def createOutputDirectory(self):
         try:
-            os.mkdir(self.directory_to)
+            os.mkdir('tmp')
         except:
-            logging.info(self.directory_to+" already exists")
+            logging.info("tmp already exists")
 
         for dir in ['yes', 'no']:
             try:
-                os.mkdir(os.path.join(self.directory_to, dir))
+                os.mkdir(os.path.join('tmp', dir))
             except:
-                logging.info(os.path.join(self.directory_to, dir)+" already exists")
+                logging.info(os.path.join('tmp', dir)+" already exists")
 
     def run(self):
-        wget.download(self.url, self.directory_to + 'data.zip')
+        wget.download(self.url, 'tmp/data.zip')
         logging.info('Zip téléchargé')
-        with zipfile.ZipFile(self.directory_to + 'data.zip', 'r') as zip_ref:
-            zip_ref.extractall(self.directory_to)
+        with zipfile.ZipFile('tmp/data.zip', 'r') as zip_ref:
+            zip_ref.extractall('tmp/')
             logging.info('Dossier dézippé')
         #Au lieu de les mettre sur un dossier il faudra les mettre dans la BDD quand elle sera créée
-        os.remove(self.directory_to + 'data.zip')        
+        os.remove('tmp/data.zip')        
             
