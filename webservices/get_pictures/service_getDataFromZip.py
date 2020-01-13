@@ -2,6 +2,8 @@ import flask, os
 import pandas as pd
 from flask import request
 import logging
+import hdfs
+import shutil
 
 from PictureGetter import PictureGetter
 
@@ -17,6 +19,11 @@ def create_csv(directory_to):
     data = pd.DataFrame(list_images, columns=['Path'])
     data.to_csv(directory_to + 'data.csv', index_label='index')
 
+def upload_files_to_hdfs(directory_to):
+    client = hdfs.InsecureClient('http://192.168.1.4:9870', user='hadoop')
+    client.upload('/' + directory_to, 'tmp/')
+    shutil.rmtree('tmp/')
+
 @app.route('/api/v1/getPictures', methods=['POST'])
 def get_pictures():
     if request.args.get('directory_to') is None :
@@ -31,9 +38,11 @@ def get_pictures():
     getPic = PictureGetter(url=url, directory_to=directory_to)
     getPic.run()
 
-    create_csv(directory_to)
+    create_csv('tmp/')
+
+    upload_files_to_hdfs(directory_to)
 
     return 'Images téléchargées'
 
-app.run()
+app.run(host="0.0.0.0")
 
