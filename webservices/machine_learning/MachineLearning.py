@@ -29,13 +29,14 @@ from sklearn.model_selection import GridSearchCV
 class MachineLearning():
 
 	# reads images and stores them
-	def __init__(self, input_folder, img_folder):
+	def __init__(self, input_folder, img_folder, model_folder):
 		self.input_folder = input_folder
+		self.model_folder = model_folder
 		self.imgs, self.labels = self.read_images(input_folder, 240)
 		self.img = self.read_image(img_folder, 240)
 		
 	def read_image(self, path, img_size = 0):
-		logging.info('read_images')
+		logging.info('read_image')
 		img = 0
 	
 		try:
@@ -53,7 +54,7 @@ class MachineLearning():
 			logging.error("Unkownown error in read_image")
 			logging.error(err)
 
-		return img
+		return [img]
 	
 	# reads images from a directory and resizes them
 	# returns the list of images and list of labels
@@ -105,21 +106,21 @@ class MachineLearning():
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
 	# trains a k-NearestNeighbors algorithm and returns a prediction
 	# if fast_train is disabled: best k-NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def knn(self, img, imgs, labels, fast_train):
 		if not(fast_train):
-			_, params = best_knn(imgs, labels)
+			model, params = best_knn(imgs, labels)
+			joblib.dump(model, self.model_folder + "knn.model")
 		else:
-			params = {'k': '3'}
-	
+			params = {'n_neighbors': '3'}
+			model = joblib.load(self.model_folder + "knn.model")
+
 		logging.info("Using k-NN with the following parameters:")
 		logging.info(params)
-		model = KNeighborsClassifier(**params, n_jobs=-1)
-		model.fit(imgs, labels)
 
 		return model.predict(img)
 
@@ -139,24 +140,24 @@ class MachineLearning():
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
 	# trains a Support Vector Machine algorithm and returns a prediction
 	# if fast_train is disabled: best SVM is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def svm(self, img, imgs, labels, fast_train):
 		if not(fast_train):
-			_, params = best_SVM(imgs, labels)
+			model, params = best_svm(imgs, labels)
+			joblib.dump(model, self.model_folder + "svm.model")
 		else:
 			params = {
 				'kernel': 'poly',
 				'C': 10**-4
 			}
+			model = joblib.load(self.model_folder + "svm.model")
 	
 		logging.info("Using SVM with the following parameters:")
 		logging.info(params)
-		model = SVC(**params, gamma='auto', random_state=0, probability=True)
-		model.fit(imgs, labels)
 
 		return model.predict([img])[0]
 		
@@ -182,23 +183,23 @@ class MachineLearning():
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
 	# trains a Gradient Boosting Classifier algorithm and returns a prediction
 	# if fast_train is disabled: best GBC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def gbc(self, img, imgs, labels, fast_train):
 		if not(fast_train):
-			_, params = best_GBC(imgs, labels)
+			model, params = best_gbc(imgs, labels)
+			joblib.dump(model, self.model_folder + "gbc.model")
 		else:
 			params = {
 				'n_estimators': 10
 			}
+			model = joblib.load(self.model_folder + "gbc.model")
 	
 		logging.info("Using GBC with the following parameters:")
 		logging.info(params)
-		model = GradientBoostingClassifier(**params)
-		model.fit(imgs, labels)
 
 		return model.predict(img)
 
@@ -218,25 +219,25 @@ class MachineLearning():
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
 	# trains a Random Forest Classifier algorithm and returns a prediction
 	# if fast_train is disabled: best RFC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def rfc(self, img, imgs, labels, fast_train):
 		if not(fast_train):
-			_, params = best_RFC(imgs, labels)
+			model, params = best_rfc(imgs, labels)
+			joblib.dump(model, self.model_folder + "rfc.model")
 		else:
 			params = {
 				'max_depth': 8,
 				'max_features': "auto",
 				'criterion': "gini"
 			}
+			model = joblib.load(self.model_folder + "rfc.model")
 	
 		logging.info("Using RFC with the following parameters:")
 		logging.info(params)
-		model = RandomForestClassifier(**params, n_estimators = 500)
-		model.fit(imgs, labels)
 
 		return model.predict(img)
 		
@@ -256,22 +257,22 @@ class MachineLearning():
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 		
 	# trains a fully connected Neural Network algorithm and returns a prediction
 	# if fast_train is disabled: best NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def nn(self, img, imgs, labels, fast_train):
 		if not(fast_train):
-			_, params = best_NN(imgs, labels)
+			model, params = best_nn(imgs, labels)
+			joblib.dump(model, self.model_folder + "nn.model")
 		else:
 			params = {
-				'criterion': tuple([64 for _ in range(10)])
+				'hidden_layer_sizes': tuple([64 for _ in range(10)])
 			}
+			model = joblib.load(self.model_folder + "nn.model")
 	
 		logging.info("Using NN with the following parameters:")
 		logging.info(params)
-		model = neural_network.MLPClassifier(**params)
-		model.fit(imgs, labels)
 
 		return model.predict(img)

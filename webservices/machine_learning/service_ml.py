@@ -22,13 +22,18 @@ def machine_learning():
 	if request.args.get('fast_train') is None :
 		return 'No "fast_train" given.'
 
+	if request.args.get('path_algorithm') is None :
+		return 'No "path_algorithm" given.'
+
+
 	directory_from = request.args.get('directory_from')
 	path_image = request.args.get('path_image')
 	algorithm = str(request.args.get('algorithm'))
 	fast_train = bool(request.args.get('fast_train'))
+	path_algorithm = request.args.get('path_algorithm')
 
 	# creates new MachineLearning object
-	ml = MachineLearning(directory_from, path_image)
+	ml = MachineLearning(directory_from, path_image, path_algorithm)
 	
 	# error detection
 	if len(ml.imgs) == 0 or len(ml.labels) == 0:
