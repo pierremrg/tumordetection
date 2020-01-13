@@ -30,29 +30,23 @@ def data_augment() :
     if request.args.get('max_augmentation') is None :
         return 'No "max_augmentation" given.'
 
+    if request.args.get('directory_to') is None :
+        return 'No "directory_to" given.'
+
     directory_from = request.args.get('directory_from')
     max_augmentation =  int(request.args.get('max_augmentation'))
+    directory_to = request.args.get('directory_to')
 
     if request.args.get('coef_rotation') is not None:
         coef_rotation = float(request.args.get('coef_rotation'))
     else:
         coef_rotation = 0.7
 
-    if request.args.get('directory_to') is not None :
-        directory_to = request.args.get('directory_to')
-    else:
-        directory_to = None
-
     dtaug = DataAugmentation(directory_from, max_augmentation, coef_rotation, directory_to)
 
     dtaug.run()
 
-    if (directory_to != None):
-        save_dir = directory_to
-    else:
-        save_dir = directory_from
-
-    create_csv(directory_to=save_dir)
+    create_csv(directory_to=directory_to)
 
     return 'Data augmentation done'
 
