@@ -20,9 +20,10 @@ class ImageNormalizer:
 		one called "yes" and another one called "no"
 	@params to_directory The destination folder, where to solve new pictures
 	"""
-	def __init__(self, from_directory, to_directory):
+	def __init__(self, from_directory, image_path, to_directory):
 		self.from_directory = from_directory
 		self.to_directory = to_directory
+		self.image_path = image_path
 		self.images = []
 
 	"""
@@ -32,22 +33,28 @@ class ImageNormalizer:
 		#(_, _, yes_filenames) = walk(self.from_directory + 'yes/').next()
 		#(_, _, no_filenames) = walk(self.from_directory + 'no/').next()
 
-		yes_filenames = os.listdir(self.from_directory + 'yes/')
-		no_filenames = os.listdir(self.from_directory + 'no/')
+		# yes_filenames = os.listdir(self.from_directory + 'yes/')
+		# no_filenames = os.listdir(self.from_directory + 'no/')
 
 		# Load images here to prevent multiple loadings
-		for filename in yes_filenames:
-			self.images.append({
-				'filename': filename,
-				'label': 'yes',
-				'image': Image.open(self.from_directory + 'yes/' + filename)
-			})
+		# for filename in yes_filenames:
+		# 	self.images.append({
+		# 		'filename': filename,
+		# 		'label': 'yes',
+		# 		'image': Image.open(self.from_directory + 'yes/' + filename)
+		# 	})
 
-		for filename in no_filenames:
+		# for filename in no_filenames:
+		# 	self.images.append({
+		# 		'filename': filename,
+		# 		'label': 'no',
+		# 		'image': Image.open(self.from_directory + 'no/' + filename)
+		# 	})
+
+		for filename in self.image_path:
 			self.images.append({
 				'filename': filename,
-				'label': 'no',
-				'image': Image.open(self.from_directory + 'no/' + filename)
+				'image': Image.open(self.from_directory + filename)
 			})
 
 		# Get max width and max height
@@ -194,11 +201,12 @@ class ImageNormalizer:
 
 
 		for im in self.images:
-			if im['label'] == 'yes':
-				im['image'].save(self.to_directory + 'yes/' + im['filename'], 'JPEG')
+			im['image'].save(self.to_directory + im['filename'], 'JPEG')
+			#if im['label'] == 'yes':
+			#	im['image'].save(self.to_directory + 'yes/' + im['filename'], 'JPEG')
 
-			elif im['label'] == 'no':
-				im['image'].save(self.to_directory + 'no/' + im['filename'], 'JPEG')
+			#elif im['label'] == 'no':
+			#	im['image'].save(self.to_directory + 'no/' + im['filename'], 'JPEG')
 
 
 
