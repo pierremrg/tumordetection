@@ -212,8 +212,8 @@ class MachineLearning():
 	# finds the best FC neural network configuration for a given dataset
 	# returns the best model and its associated arguments
 	def best_nn(self, imgs, labels):
-		nb_nodes = [32] #, 64, 128, 256] # Number of nodes per hidden layer
-		nb_layers = [2, 5]#, 8, 12, 20] # Number of hidden layers
+		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
+		nb_layers = [2, 5, 8, 12, 20] # Number of hidden layers
 		nn = neural_network.MLPClassifier()
 		grid = {
 			'hidden_layer_sizes': [tuple([nb_node for i in range(nb_layer)]) for nb_layer in nb_layers for nb_node in nb_nodes]
