@@ -218,7 +218,7 @@ class MachineLearning():
 		grid = {
 			'hidden_layer_sizes': [tuple([nb_node for i in range(nb_layer)]) for nb_layer in nb_layers for nb_node in nb_nodes]
 		}
-		gs = GridSearchCV(nn, grid, verbose=2, n_jobs=-1)
+		gs = GridSearchCV(nn, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
 		c = dask.distributed.Client(DASK_IP_ADRESS)
