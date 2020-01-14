@@ -25,15 +25,15 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn import model_selection, neural_network
 from sklearn.model_selection import GridSearchCV
 
+DASK_IP_ADRESS = "127.0.0.1:61158"
 
 class MachineLearning():
 
 	# reads images and stores them
-	def __init__(self, input_folder, img_folder, model_folder):
+	def __init__(self, input_folder, model_folder):
 		self.input_folder = input_folder
 		self.model_folder = model_folder
 		self.imgs, self.labels = self.read_images(input_folder, 240)
-		self.img = self.read_image(img_folder, 240)
 		
 	# def read_image(self, path, img_size = 0):
 		# logging.info('read_image')
@@ -103,14 +103,15 @@ class MachineLearning():
 		gs = GridSearchCV(knn, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 
 	# trains a k-NearestNeighbors algorithm and saves the best model
-	def knn(self, img, imgs, labels):
-		model, params = best_knn(imgs, labels)
+	def knn(self, imgs, labels):
+		model, params = self.best_knn(imgs, labels)
 		joblib.dump(model, self.model_folder + "knn.model")
 
 		logging.info("Found best k-NN with the following parameters:")
@@ -120,7 +121,7 @@ class MachineLearning():
 
 	# finds the best SVM configuration for a given dataset
 	# returns the best model and its associated arguments
-	def best_SVM(self, imgs, labels):
+	def best_svm(self, imgs, labels):
 		svm = SVC(gamma='auto', random_state=0, probability=True)
 		grid = {
 			'kernel': ['poly', 'linear', 'rbf', 'sigmoid'],
@@ -130,16 +131,15 @@ class MachineLearning():
 		gs = GridSearchCV(svm, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 
 	# trains a Support Vector Machine algorithm and saves the best model
-	def svm(self, img, imgs, labels):
-	def svm(self, img, imgs, labels):
-		model, params = best_svm(imgs, labels)
+	def svm(self, imgs, labels):
+		model, params = self.best_svm(imgs, labels)
 		joblib.dump(model, self.model_folder + "svm.model")
 	
 		logging.info("Found best SVM with the following parameters:")
@@ -149,7 +149,7 @@ class MachineLearning():
 		
 	# finds the best GBC configuration for a given dataset
 	# returns the best model and its associated arguments
-	def best_GBC(self, imgs, labels):
+	def best_gbc(self, imgs, labels):
 		gbc = GradientBoostingClassifier()
 		grid = {
 			"loss":["deviance"],
@@ -165,15 +165,15 @@ class MachineLearning():
 		gs = GridSearchCV(gbc, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 
 	# trains a Gradient Boosting Classifier algorithm and saves the best model
-	def gbc(self, img, imgs, labels):
-		model, params = best_gbc(imgs, labels)
+	def gbc(self, imgs, labels):
+		model, params = self.best_gbc(imgs, labels)
 		joblib.dump(model, self.model_folder + "gbc.model")
 
 		logging.info("Found best GBC with the following parameters:")
@@ -193,15 +193,15 @@ class MachineLearning():
 		gs = GridSearchCV(rfc, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 
 	# trains a Random Forest Classifier algorithm and saves the best model
-	def rfc(self, img, imgs, labels):
-		model, params = best_rfc(imgs, labels)
+	def rfc(self, imgs, labels):
+		model, params = self.best_rfc(imgs, labels)
 		joblib.dump(model, self.model_folder + "rfc.model")
 	
 		logging.info("Found best RFC with the following parameters:")
@@ -211,25 +211,25 @@ class MachineLearning():
 		
 	# finds the best FC neural network configuration for a given dataset
 	# returns the best model and its associated arguments
-	def best_NN(self, imgs, labels):
-		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
-		nb_layers = [2,5,8,12,20] # Number of hidden layers
+	def best_nn(self, imgs, labels):
+		nb_nodes = [32] #, 64, 128, 256] # Number of nodes per hidden layer
+		nb_layers = [2, 5]#, 8, 12, 20] # Number of hidden layers
 		nn = neural_network.MLPClassifier()
 		grid = {
-			'hidden_layer_sizes': tuple([nb_node for i in range(nb_layer) for nb_layer in nb_layers for nb_node in nb_nodes])
+			'hidden_layer_sizes': [tuple([nb_node for i in range(nb_layer)]) for nb_layer in nb_layers for nb_node in nb_nodes]
 		}
-		gs = GridSearchCV(nn, grid, verbose=2, cv=5, n_jobs=-1)
+		gs = GridSearchCV(nn, grid, verbose=2, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 		
 	# trains a fully connected Neural Network algorithm and saves the best model
-	def nn(self, img, imgs, labels):
-		model, params = best_nn(imgs, labels)
+	def nn(self, imgs, labels):
+		model, params = self.best_nn(imgs, labels)
 		joblib.dump(model, self.model_folder + "nn.model")
 
 		logging.info("Found best NN with the following parameters:")

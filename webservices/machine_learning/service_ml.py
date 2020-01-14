@@ -41,7 +41,7 @@ def machine_learning():
 	elif (algorithm == "rfc"):
 		ml.rfc(ml.imgs, ml.labels)
 	elif (algorithm == "nn"):
-		ml.gbc(ml.imgs, ml.labels)
+		ml.nn(ml.imgs, ml.labels)
 	else:
 		app.logger.warning("Unexpected algorithm choice, choosing default!")
 		ml.svm(ml.imgs, ml.labels)
