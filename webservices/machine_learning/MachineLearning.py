@@ -35,26 +35,26 @@ class MachineLearning():
 		self.imgs, self.labels = self.read_images(input_folder, 240)
 		self.img = self.read_image(img_folder, 240)
 		
-	def read_image(self, path, img_size = 0):
-		logging.info('read_image')
-		img = 0
+	# def read_image(self, path, img_size = 0):
+		# logging.info('read_image')
+		# img = 0
 	
-		try:
-			img = Image.open(path)
-			if img_size != 0:
-				img = img.resize((img_size, img_size))
-			img = img.convert('L').convert('RGB')
-			img = np.asarray(img).flatten()
+		# try:
+			# img = Image.open(path)
+			# if img_size != 0:
+				# img = img.resize((img_size, img_size))
+			# img = img.convert('L').convert('RGB')
+			# img = np.asarray(img).flatten()
 				
-		except IOError as err:
-			logging.error("Error reading image or path")
-			logging.error(err)
+		# except IOError as err:
+			# logging.error("Error reading image or path")
+			# logging.error(err)
 
-		except Exception as err:
-			logging.error("Unkownown error in read_image")
-			logging.error(err)
+		# except Exception as err:
+			# logging.error("Unkownown error in read_image")
+			# logging.error(err)
 
-		return [img]
+		# return [img]
 	
 	# reads images from a directory and resizes them
 	# returns the list of images and list of labels
@@ -112,17 +112,13 @@ class MachineLearning():
 	# if fast_train is disabled: best k-NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def knn(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			model, params = best_knn(imgs, labels)
-			joblib.dump(model, self.model_folder + "knn.model")
-		else:
-			params = {'n_neighbors': '3'}
-			model = joblib.load(self.model_folder + "knn.model")
+		model, params = best_knn(imgs, labels)
+		joblib.dump(model, self.model_folder + "knn.model")
 
-		logging.info("Using k-NN with the following parameters:")
+		logging.info("Found best k-NN with the following parameters:")
 		logging.info(params)
 
-		return model.predict(img)
+		return 0
 
 	# finds the best SVM configuration for a given dataset
 	# returns the best score and its associated arguments
@@ -146,20 +142,13 @@ class MachineLearning():
 	# if fast_train is disabled: best SVM is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def svm(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			model, params = best_svm(imgs, labels)
-			joblib.dump(model, self.model_folder + "svm.model")
-		else:
-			params = {
-				'kernel': 'poly',
-				'C': 10**-4
-			}
-			model = joblib.load(self.model_folder + "svm.model")
+		model, params = best_svm(imgs, labels)
+		joblib.dump(model, self.model_folder + "svm.model")
 	
-		logging.info("Using SVM with the following parameters:")
+		logging.info("Found best SVM with the following parameters:")
 		logging.info(params)
 
-		return model.predict([img])[0]
+		return 0
 		
 	# finds the best GBC configuration for a given dataset
 	# returns the best score and its associated arguments
@@ -189,19 +178,13 @@ class MachineLearning():
 	# if fast_train is disabled: best GBC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def gbc(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			model, params = best_gbc(imgs, labels)
-			joblib.dump(model, self.model_folder + "gbc.model")
-		else:
-			params = {
-				'n_estimators': 10
-			}
-			model = joblib.load(self.model_folder + "gbc.model")
-	
-		logging.info("Using GBC with the following parameters:")
+		model, params = best_gbc(imgs, labels)
+		joblib.dump(model, self.model_folder + "gbc.model")
+
+		logging.info("Found best GBC with the following parameters:")
 		logging.info(params)
 
-		return model.predict(img)
+		return 0
 
 	# finds the best RFC configuration for a given dataset
 	# returns the best score and its associated arguments
@@ -225,21 +208,13 @@ class MachineLearning():
 	# if fast_train is disabled: best RFC is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def rfc(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			model, params = best_rfc(imgs, labels)
-			joblib.dump(model, self.model_folder + "rfc.model")
-		else:
-			params = {
-				'max_depth': 8,
-				'max_features': "auto",
-				'criterion': "gini"
-			}
-			model = joblib.load(self.model_folder + "rfc.model")
+		model, params = best_rfc(imgs, labels)
+		joblib.dump(model, self.model_folder + "rfc.model")
 	
-		logging.info("Using RFC with the following parameters:")
+		logging.info("Found best RFC with the following parameters:")
 		logging.info(params)
 
-		return model.predict(img)
+		return 0
 		
 	# finds the best FC neural network configuration for a given dataset
 	# returns the best score and its associated arguments
@@ -263,16 +238,10 @@ class MachineLearning():
 	# if fast_train is disabled: best NN is used to find the best parameters
 	# if fast_train is enabled: previously determined parameters are used
 	def nn(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			model, params = best_nn(imgs, labels)
-			joblib.dump(model, self.model_folder + "nn.model")
-		else:
-			params = {
-				'hidden_layer_sizes': tuple([64 for _ in range(10)])
-			}
-			model = joblib.load(self.model_folder + "nn.model")
-	
-		logging.info("Using NN with the following parameters:")
+		model, params = best_nn(imgs, labels)
+		joblib.dump(model, self.model_folder + "nn.model")
+
+		logging.info("Found best NN with the following parameters:")
 		logging.info(params)
 
-		return model.predict(img)
+		return 0
