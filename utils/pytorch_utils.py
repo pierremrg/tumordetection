@@ -155,7 +155,7 @@ def test_model(model, image):
         _, indice = torch.max(prediction, 1)
 
     image_class = int(indice[0])
-    proba = float(sf(prediction)[0][int(indices[0])])
+    proba = float(sf(prediction)[0][int(indice[0])])
 
     return image_class, proba
     
