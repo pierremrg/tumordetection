@@ -19,12 +19,14 @@ class Prediction():
 		logging.info('prediction.init')
 		self.directory_from = dir_from
 		self.algo = algo
-		self.dir_img = dir_img
+		self.dir_img = dir_img	
+		self.image = self.read_image(self.dir_img, 240)
+		
 		if self.algo == 'cnn':
 			self.file = 'Medium_CNN_trained.pt'
 		else:
 			self.file = self.algo + "_trained.pt"
-		self.image = self.read_image(self.dir_img, 240)
+
 
 	def read_image(self, path, img_size = 0):
 		logging.info('prediction_ML.read_image')
@@ -63,10 +65,17 @@ class Prediction():
 			features = list(model.classifier.children())[:-1]
 			features.extend([nn.Linear(num_features, 2)])
 			model.classifier = nn.Sequential(*features)
-		model = model.to(device)
-		logging.info('prediction.loadModel')
-		model.load_state_dict(torch.load(self.directory_from+self.file))
-		logging.info('prediction.testModel')
+			
+		try:
+			model = model.to(device)
+			logging.info('prediction.loadModel')
+			model.load_state_dict(torch.load(self.directory_from+self.file))
+			logging.info('prediction.testModel')
+		except IOError as err:
+			logging.error('Error model '+str(self.algo)+' is not trained yet!')
+			logging.error('Train this model first before using it for predictions')
+			return -1, 1
+
 		label, proba = test_model(model, self.image)
 		logging.info('Label found : ' + str(label) + ' - Probability : ' + str(proba))
 		return label, proba
