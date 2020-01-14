@@ -29,7 +29,7 @@ class Prediction():
 
 
 	def read_image(self, path, img_size = 0):
-		logging.info('prediction_ML.read_image')
+		logging.info('prediction.read_image')
 		img = 0
 	
 		try:
@@ -37,7 +37,7 @@ class Prediction():
 			if img_size != 0:
 				img = img.resize((img_size, img_size))
 			img = img.convert('L').convert('RGB')
-			img = np.asarray(img).flatten()
+			img = np.asarray(img)
 				
 		except IOError as err:
 			logging.error("Error reading image or path")
