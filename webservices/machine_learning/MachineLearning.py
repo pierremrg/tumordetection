@@ -93,7 +93,7 @@ class MachineLearning():
 		return list_img, labels
 		
 	# finds the best k-NN configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_knn(self, imgs, labels):
 		logging.info("Finding best k-NN: This may take a while..")
 		knn = KNeighborsClassifier(n_jobs=-1)
@@ -108,10 +108,8 @@ class MachineLearning():
 
 		return gs.best_estimator_, gs.best_params_
 
-	# trains a k-NearestNeighbors algorithm and returns a prediction
-	# if fast_train is disabled: best k-NN is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def knn(self, img, imgs, labels, fast_train):
+	# trains a k-NearestNeighbors algorithm and saves the best model
+	def knn(self, img, imgs, labels):
 		model, params = best_knn(imgs, labels)
 		joblib.dump(model, self.model_folder + "knn.model")
 
@@ -121,7 +119,7 @@ class MachineLearning():
 		return 0
 
 	# finds the best SVM configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_SVM(self, imgs, labels):
 		svm = SVC(gamma='auto', random_state=0, probability=True)
 		grid = {
@@ -138,10 +136,9 @@ class MachineLearning():
 
 		return gs.best_estimator_, gs.best_params_
 
-	# trains a Support Vector Machine algorithm and returns a prediction
-	# if fast_train is disabled: best SVM is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def svm(self, img, imgs, labels, fast_train):
+	# trains a Support Vector Machine algorithm and saves the best model
+	def svm(self, img, imgs, labels):
+	def svm(self, img, imgs, labels):
 		model, params = best_svm(imgs, labels)
 		joblib.dump(model, self.model_folder + "svm.model")
 	
@@ -151,7 +148,7 @@ class MachineLearning():
 		return 0
 		
 	# finds the best GBC configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_GBC(self, imgs, labels):
 		gbc = GradientBoostingClassifier()
 		grid = {
@@ -174,10 +171,8 @@ class MachineLearning():
 
 		return gs.best_estimator_, gs.best_params_
 
-	# trains a Gradient Boosting Classifier algorithm and returns a prediction
-	# if fast_train is disabled: best GBC is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def gbc(self, img, imgs, labels, fast_train):
+	# trains a Gradient Boosting Classifier algorithm and saves the best model
+	def gbc(self, img, imgs, labels):
 		model, params = best_gbc(imgs, labels)
 		joblib.dump(model, self.model_folder + "gbc.model")
 
@@ -187,7 +182,7 @@ class MachineLearning():
 		return 0
 
 	# finds the best RFC configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_RFC(self, imgs, labels):
 		rfc = RandomForestClassifier(n_estimators = 500)
 		grid = {
@@ -204,10 +199,8 @@ class MachineLearning():
 
 		return gs.best_estimator_, gs.best_params_
 
-	# trains a Random Forest Classifier algorithm and returns a prediction
-	# if fast_train is disabled: best RFC is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def rfc(self, img, imgs, labels, fast_train):
+	# trains a Random Forest Classifier algorithm and saves the best model
+	def rfc(self, img, imgs, labels):
 		model, params = best_rfc(imgs, labels)
 		joblib.dump(model, self.model_folder + "rfc.model")
 	
@@ -217,7 +210,7 @@ class MachineLearning():
 		return 0
 		
 	# finds the best FC neural network configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_NN(self, imgs, labels):
 		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
 		nb_layers = [2,5,8,12,20] # Number of hidden layers
@@ -234,10 +227,8 @@ class MachineLearning():
 
 		return gs.best_estimator_, gs.best_params_
 		
-	# trains a fully connected Neural Network algorithm and returns a prediction
-	# if fast_train is disabled: best NN is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def nn(self, img, imgs, labels, fast_train):
+	# trains a fully connected Neural Network algorithm and saves the best model
+	def nn(self, img, imgs, labels):
 		model, params = best_nn(imgs, labels)
 		joblib.dump(model, self.model_folder + "nn.model")
 
