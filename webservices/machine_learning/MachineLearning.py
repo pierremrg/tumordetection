@@ -25,35 +25,36 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn import model_selection, neural_network
 from sklearn.model_selection import GridSearchCV
 
+DASK_IP_ADRESS = "127.0.0.1:61158"
 
 class MachineLearning():
 
 	# reads images and stores them
-	def __init__(self, input_folder, img_folder):
+	def __init__(self, input_folder, model_folder):
 		self.input_folder = input_folder
+		self.model_folder = model_folder
 		self.imgs, self.labels = self.read_images(input_folder, 240)
-		self.img = self.read_image(img_folder, 240)
 		
-	def read_image(self, path, img_size = 0):
-		logging.info('read_images')
-		img = 0
+	# def read_image(self, path, img_size = 0):
+		# logging.info('read_image')
+		# img = 0
 	
-		try:
-			img = Image.open(path)
-			if img_size != 0:
-				img = img.resize((img_size, img_size))
-			img = img.convert('L').convert('RGB')
-			img = np.asarray(img).flatten()
+		# try:
+			# img = Image.open(path)
+			# if img_size != 0:
+				# img = img.resize((img_size, img_size))
+			# img = img.convert('L').convert('RGB')
+			# img = np.asarray(img).flatten()
 				
-		except IOError as err:
-			logging.error("Error reading image or path")
-			logging.error(err)
+		# except IOError as err:
+			# logging.error("Error reading image or path")
+			# logging.error(err)
 
-		except Exception as err:
-			logging.error("Unkownown error in read_image")
-			logging.error(err)
+		# except Exception as err:
+			# logging.error("Unkownown error in read_image")
+			# logging.error(err)
 
-		return img
+		# return [img]
 	
 	# reads images from a directory and resizes them
 	# returns the list of images and list of labels
@@ -92,7 +93,7 @@ class MachineLearning():
 		return list_img, labels
 		
 	# finds the best k-NN configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_knn(self, imgs, labels):
 		logging.info("Finding best k-NN: This may take a while..")
 		knn = KNeighborsClassifier(n_jobs=-1)
@@ -102,30 +103,25 @@ class MachineLearning():
 		gs = GridSearchCV(knn, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
-	# trains a k-NearestNeighbors algorithm and returns a prediction
-	# if fast_train is disabled: best k-NN is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def knn(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			_, params = best_knn(imgs, labels)
-		else:
-			params = {'k': '3'}
-	
-		logging.info("Using k-NN with the following parameters:")
+	# trains a k-NearestNeighbors algorithm and saves the best model
+	def knn(self, imgs, labels):
+		model, params = self.best_knn(imgs, labels)
+		joblib.dump(model, self.model_folder + "knn.model")
+
+		logging.info("Found best k-NN with the following parameters:")
 		logging.info(params)
-		model = KNeighborsClassifier(**params, n_jobs=-1)
-		model.fit(imgs, labels)
 
-		return model.predict(img)
+		return 0
 
 	# finds the best SVM configuration for a given dataset
-	# returns the best score and its associated arguments
-	def best_SVM(self, imgs, labels):
+	# returns the best model and its associated arguments
+	def best_svm(self, imgs, labels):
 		svm = SVC(gamma='auto', random_state=0, probability=True)
 		grid = {
 			'kernel': ['poly', 'linear', 'rbf', 'sigmoid'],
@@ -135,34 +131,25 @@ class MachineLearning():
 		gs = GridSearchCV(svm, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
-	# trains a Support Vector Machine algorithm and returns a prediction
-	# if fast_train is disabled: best SVM is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def svm(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			_, params = best_SVM(imgs, labels)
-		else:
-			params = {
-				'kernel': 'poly',
-				'C': 10**-4
-			}
+	# trains a Support Vector Machine algorithm and saves the best model
+	def svm(self, imgs, labels):
+		model, params = self.best_svm(imgs, labels)
+		joblib.dump(model, self.model_folder + "svm.model")
 	
-		logging.info("Using SVM with the following parameters:")
+		logging.info("Found best SVM with the following parameters:")
 		logging.info(params)
-		model = SVC(**params, gamma='auto', random_state=0, probability=True)
-		model.fit(imgs, labels)
 
-		return model.predict([img])[0]
+		return 0
 		
 	# finds the best GBC configuration for a given dataset
-	# returns the best score and its associated arguments
-	def best_GBC(self, imgs, labels):
+	# returns the best model and its associated arguments
+	def best_gbc(self, imgs, labels):
 		gbc = GradientBoostingClassifier()
 		grid = {
 			"loss":["deviance"],
@@ -178,32 +165,24 @@ class MachineLearning():
 		gs = GridSearchCV(gbc, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
-	# trains a Gradient Boosting Classifier algorithm and returns a prediction
-	# if fast_train is disabled: best GBC is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def gbc(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			_, params = best_GBC(imgs, labels)
-		else:
-			params = {
-				'n_estimators': 10
-			}
-	
-		logging.info("Using GBC with the following parameters:")
+	# trains a Gradient Boosting Classifier algorithm and saves the best model
+	def gbc(self, imgs, labels):
+		model, params = self.best_gbc(imgs, labels)
+		joblib.dump(model, self.model_folder + "gbc.model")
+
+		logging.info("Found best GBC with the following parameters:")
 		logging.info(params)
-		model = GradientBoostingClassifier(**params)
-		model.fit(imgs, labels)
 
-		return model.predict(img)
+		return 0
 
 	# finds the best RFC configuration for a given dataset
-	# returns the best score and its associated arguments
+	# returns the best model and its associated arguments
 	def best_RFC(self, imgs, labels):
 		rfc = RandomForestClassifier(n_estimators = 500)
 		grid = {
@@ -214,64 +193,46 @@ class MachineLearning():
 		gs = GridSearchCV(rfc, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 
-	# trains a Random Forest Classifier algorithm and returns a prediction
-	# if fast_train is disabled: best RFC is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def rfc(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			_, params = best_RFC(imgs, labels)
-		else:
-			params = {
-				'max_depth': 8,
-				'max_features': "auto",
-				'criterion': "gini"
-			}
+	# trains a Random Forest Classifier algorithm and saves the best model
+	def rfc(self, imgs, labels):
+		model, params = self.best_rfc(imgs, labels)
+		joblib.dump(model, self.model_folder + "rfc.model")
 	
-		logging.info("Using RFC with the following parameters:")
+		logging.info("Found best RFC with the following parameters:")
 		logging.info(params)
-		model = RandomForestClassifier(**params, n_estimators = 500)
-		model.fit(imgs, labels)
 
-		return model.predict(img)
+		return 0
 		
 	# finds the best FC neural network configuration for a given dataset
-	# returns the best score and its associated arguments
-	def best_NN(self, imgs, labels):
+	# returns the best model and its associated arguments
+	def best_nn(self, imgs, labels):
 		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
-		nb_layers = [2,5,8,12,20] # Number of hidden layers
+		nb_layers = [2, 5, 8, 12, 20] # Number of hidden layers
 		nn = neural_network.MLPClassifier()
 		grid = {
-			'hidden_layer_sizes': tuple([nb_node for i in range(nb_layer) for nb_layer in nb_layers for nb_node in nb_nodes])
+			'hidden_layer_sizes': [tuple([nb_node for i in range(nb_layer)]) for nb_layer in nb_layers for nb_node in nb_nodes]
 		}
 		gs = GridSearchCV(nn, grid, verbose=2, cv=5, n_jobs=-1)
 
 		# Dask distributed
-		c = dask.distributed.Client()
+		c = dask.distributed.Client(DASK_IP_ADRESS)
 		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
 			gs.fit(imgs, labels)
 
-		return gs.best_score_, gs.best_params_
+		return gs.best_estimator_, gs.best_params_
 		
-	# trains a fully connected Neural Network algorithm and returns a prediction
-	# if fast_train is disabled: best NN is used to find the best parameters
-	# if fast_train is enabled: previously determined parameters are used
-	def nn(self, img, imgs, labels, fast_train):
-		if not(fast_train):
-			_, params = best_NN(imgs, labels)
-		else:
-			params = {
-				'criterion': tuple([64 for _ in range(10)])
-			}
-	
-		logging.info("Using NN with the following parameters:")
-		logging.info(params)
-		model = neural_network.MLPClassifier(**params)
-		model.fit(imgs, labels)
+	# trains a fully connected Neural Network algorithm and saves the best model
+	def nn(self, imgs, labels):
+		model, params = self.best_nn(imgs, labels)
+		joblib.dump(model, self.model_folder + "nn.model")
 
-		return model.predict(img)
+		logging.info("Found best NN with the following parameters:")
+		logging.info(params)
+
+		return 0

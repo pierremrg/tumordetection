@@ -7,14 +7,7 @@ import torch
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import Dataset
-
-formatter = logging.Formatter(fmt = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-logger = logging.getLogger()
-logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
+from torchvision import models
 
 device = torch.device("cuda:0")
 
@@ -36,8 +29,6 @@ class brain_Dataset(Dataset):
         return img, label
 
 def read_images(directory, img_size):
-    logging.info('pytorch_utils.read_images')
-
     list_img = []
     labels = []
 
@@ -56,8 +47,6 @@ def read_images(directory, img_size):
     return list_img, labels
 
 def create_dataloader(directory, img_size, batch_size, transforms = None, validation_split = 0.2):
-    logging.info('pytorch_utils.create_dataloader')
-
     list_img, labels = read_images(directory, img_size)
     dataset = brain_Dataset([list_img, labels], transforms)
 
@@ -99,9 +88,7 @@ def compute_accuracy(model, val_loader):
     
     return accuracy
 
-def train_model(model, train_loader, val_loader, loss, optimizer, num_epochs):
-    logging.info('pytorch_utils.train_model')
-
+def train_model(model, train_loader, val_loader, loss, optimizer, num_epochs):    
     train_history = []
     val_history = []
     
@@ -132,7 +119,7 @@ def train_model(model, train_loader, val_loader, loss, optimizer, num_epochs):
         train_history.append(train_accuracy)
         val_history.append(val_accuracy)
         
-        logging.info('Epochs: %d, Train accuracy: %f, Val accuracy: %f', epoch, train_accuracy, val_accuracy)
+        print("Train accuracy: %f, Val accuracy: %f" % (train_accuracy, val_accuracy))
         
     return train_history, val_history
 
@@ -153,9 +140,11 @@ def test_model(model, image):
         prediction = model(image_gpu)
 
         _, indice = torch.max(prediction, 1)
+        print(prediction)
+        print(torch.max(prediction,1))
+        print(indice)
 
     image_class = int(indice[0])
     proba = float(sf(prediction)[0][int(indice[0])])
 
     return image_class, proba
-    

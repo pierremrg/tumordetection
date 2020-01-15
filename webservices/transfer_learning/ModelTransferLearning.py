@@ -85,7 +85,7 @@ class ModelTransferLearning():
     def save_model(self):
         logging.info('ModelTransferLearning.save_model')
 
-        torch.save(self.model.state_dict(), self.save_directory + '/' + str(self.network) + '_trained.pt')
+        torch.save(self.model.state_dict(), self.save_directory + str(self.network) + '_trained.pt')
 
     def run(self):
         logging.info('ModelTransferLearning.run')
