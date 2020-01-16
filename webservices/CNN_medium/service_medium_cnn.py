@@ -35,6 +35,8 @@ def train_medium_cnn():
 
     cmc.run()
 
-    return 'Medium CNN trained'
+    train_accuracy, val_accuracy = cmc.get_accuracy()
+
+    return 'Medium CNN trained : train_accuracy = ' + str(train_accuracy) + ' val_accuracy = ' + str(val_accuracy)
 
 app.run()

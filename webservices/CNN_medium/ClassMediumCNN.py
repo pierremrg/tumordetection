@@ -55,10 +55,10 @@ class ClassMediumCNN():
                                                             loss, 
                                                             optimizer, 
                                                             self.epochs)
-    def show_accuracy(self):
-        logging.info('ClassMediumCNN.show_accuracy')
+    def get_accuracy(self):
+        logging.info('ClassMediumCNN.get_accuracy')
 
-        print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+        return self.train_history[-1], self.val_history[-1]
     
     def save_model(self):
         logging.info('ClassMediumCNN.save_model')
@@ -70,6 +70,5 @@ class ClassMediumCNN():
 
         self.initDataLoader()
         self.training()
-        self.show_accuracy()
         self.save_model()  
           
