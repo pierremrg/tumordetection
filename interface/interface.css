@@ -1,3 +1,7 @@
+*{
+	box-sizing: border-box;
+}
+
 html{
 	margin: 0;
 }
@@ -16,8 +20,8 @@ body{
 section{
 	background: #222;
 	width: 47%;
-	height: 200px;
 	border-radius: 20px;
+	padding: 10px;
 }
 
 #train-section{
@@ -28,16 +32,40 @@ section{
 	float:right;
 }
 
-#train-section h2{
-	background: #00A4DF;
+section h2{
 	border-radius: 20px;
-	margin: 10px;
+	margin: 0;
+	margin-bottom: 20px;
 	color:white;
 }
 
-#test-section h2{
-	background: #D62246;
+input[type=text], select{
+	background: white;
 	border-radius: 20px;
-	margin: 10px;
+	padding: 7px 10px;
+	border:none;
+	width: 70%;
+}
+
+input[type=submit]{
+	padding: 10px 20px;
+	border:none;
+	border-radius: 20px;
 	color:white;
+	width: 70%;
+	cursor:pointer;
+	font-weight: bold;
+}
+
+input[type=submit].go{
+	margin:20px;
+}
+
+input[type=submit]:hover{
+	background: white !important;
+	color:black;
+}
+
+input[type=file]{
+	display: none;
 }
