@@ -1,0 +1,43 @@
+html{
+	margin: 0;
+}
+
+body{
+	font-family: 'PT Sans', serif, sans-serif;
+	background: #333;
+	color:silver;
+	margin: 2.5%;
+}
+
+#main{
+	text-align: center;
+}
+
+section{
+	background: #222;
+	width: 47%;
+	height: 200px;
+	border-radius: 20px;
+}
+
+#train-section{
+	float:left;
+}
+
+#test-section{
+	float:right;
+}
+
+#train-section h2{
+	background: #00A4DF;
+	border-radius: 20px;
+	margin: 10px;
+	color:white;
+}
+
+#test-section h2{
+	background: #D62246;
+	border-radius: 20px;
+	margin: 10px;
+	color:white;
+}
