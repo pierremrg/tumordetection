@@ -35,6 +35,8 @@ def train_transfer_learning():
 
     mtl.run()
 
-    return 'Model ' + str(network) + ' trained'
+    train_accuracy, val_accuracy = cmc.get_accuracy()
+
+    return 'Model ' + str(network) + ' trained : train_accuracy = ' + str(train_accuracy) + ' val_accuracy = ' + str(val_accuracy)
 
 app.run()

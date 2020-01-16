@@ -77,10 +77,10 @@ class ModelTransferLearning():
                                                             loss, 
                                                             self.optimizer, 
                                                             self.epochs)
-    def show_accuracy(self):
-        logging.info('ModelTransferLearning.show_accuracy')
+    def get_accuracy(self):
+        logging.info('ModelTransferLearning.get_accuracy')
 
-        print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+        return self.train_history[-1], self.val_history[-1]
     
     def save_model(self):
         logging.info('ModelTransferLearning.save_model')
@@ -92,6 +92,5 @@ class ModelTransferLearning():
 
         self.initDataLoader()
         self.training()
-        self.show_accuracy()
         self.save_model()  
           
