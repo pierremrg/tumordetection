@@ -1,54 +1,48 @@
 import flask
 from flask import request
 import os
+import json
 
 from Orchestration import Orchestration
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-list_algo = ["cnn", "resnet", "alexnet", "vgg"]
+list_algo_deep = ["cnn", "resnet", "alexnet", "vgg"]
+list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 
 # Pour lancer ce service en local, il faut avoir modifié les ports des microservices (par ex, app.run(port = 5001)) car sinon impossible de lancer plusieurs apps flask en même temps
-@app.route('/api/v1/orchestration_preprocessing', methods=['POST'])
-def orchestration() :
+@app.route('/api/v1/orchestrationTraining', methods=['GET'])
+def orchestrationTraining():
 
-    if request.args.get('directory_to') is None :
-        return 'No "directory_to" given.'
+    #JSON (url_db & classifiers)
+    if request.args.get('json') is None:
+        return 'No "json" given.'
     else:
-        directory_to = request.args.get('directory_to')
+        data = request.args.get('json')
 
-    if request.args.get('max_augmentation') is None :
-        return 'No "max_augmentation" given.'
+    data = json.loads(data)
+    url = data["url_db"]
+    classifiers = data["classifiers"]
 
-    max_augmentation =  int(request.args.get('max_augmentation'))
+    list_algo = []
 
-    if request.args.get('coef_rotation') is not None:
-        coef_rotation = float(request.args.get('coef_rotation'))
-    else:
-        coef_rotation = 0.7
+    for algo in classifiers:
+        if not(algo in list_algo_deep) and not(algo in list_algo_ml):
+            return algo + ' is an incorrect algo.'
+        list_algo.append(algo)
 
-    if request.args.get('algo') is None :
-        return 'No "algo" given.'
-    elif not(request.args.get('algo') in list_algo) :
-        return 'Incorrect "algo" provided.'
-    else:
-        algo = request.args.get('algo')
+    orch = Orchestration(url, list_algo)
+    list_returns_trains = orch.run()
+    string_result = '{ \"returns_trains\": {'
+    for i in range(len(list_returns_trains)):
+        string_result += list_returns_trains[i]
+        if i == len(list_returns_trains) - 1:
+            string_result += '}}'
+        else:
+            string_result += ','
+    return json.loads(string_result)
 
-    if request.args.get('batch_size') is not None:
-        batch_size = int(request.args.get('batch_size'))
-    else:
-        batch_size = 30
+app.run(port = 5009)
 
-    if request.args.get('epochs') is not None:
-        epochs = int(request.args.get('epochs'))
-    else:
-        epochs = 30
-
-    orch = Orchestration(directory_to, max_augmentation, coef_rotation, algo, batch_size, epochs)
-
-    orch.run()
-
-    return 'Orchestration done'
-
-app.run(port = 5006)
+#http://localhost:5006/api/v1/orchestrationTraining?json={%22url_db%22:%22aaaa%22,%20%22classifiers%22:[%22resnet%22},%22knn%22]}

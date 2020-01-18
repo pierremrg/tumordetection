@@ -82,4 +82,4 @@ def normalize():
 
 	return 'Normalization done.'
 
-app.run()
+app.run(host="0.0.0.0", port="5003")

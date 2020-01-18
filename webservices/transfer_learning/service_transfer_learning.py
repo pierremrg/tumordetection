@@ -33,8 +33,8 @@ def train_transfer_learning():
     
     mtl = ModelTransferLearning(images_directory, save_directory, batch_size, network)
 
-    mtl.run()
+    (train_acc, val_acc) = mtl.run()
 
-    return 'Model ' + str(network) + ' trained'
+    return '\"' + network + '\":{\"train_acc\":'+train_acc+' ,\"val_acc\":'+val_acc+'}'
 
-app.run()
+app.run(port = 5006)

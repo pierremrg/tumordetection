@@ -81,17 +81,19 @@ class ModelTransferLearning():
         logging.info('ModelTransferLearning.show_accuracy')
 
         print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+        return(str(self.train_history[-1]), str(self.val_history[-1]))
     
     def save_model(self):
         logging.info('ModelTransferLearning.save_model')
 
-        torch.save(self.model.state_dict(), self.save_directory + '/' + str(self.network) + '_trained.pt')
+        torch.save(self.model.state_dict(), self.save_directory + str(self.network) + '_trained.pt')
 
     def run(self):
         logging.info('ModelTransferLearning.run')
 
         self.initDataLoader()
         self.training()
-        self.show_accuracy()
-        self.save_model()  
+        (train_acc, val_acc) = self.show_accuracy()
+        self.save_model()
+        return (train_acc, val_acc)
           

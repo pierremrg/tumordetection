@@ -38,7 +38,7 @@ class DataAugmentation():
     def copy_file(self):
         logging.info('data_augmentation.copy_file')
         hdfs_client.download('/' + self.directory_from, '')
-        os.remove('data/data.csv')
+        os.remove(self.directory_from + 'data.csv')
         hdfs_client.upload('/' + self.directory_to, self.directory_from)
         shutil.rmtree(self.directory_from)	
                 

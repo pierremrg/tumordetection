@@ -1,0 +1,71 @@
+*{
+	box-sizing: border-box;
+}
+
+html{
+	margin: 0;
+}
+
+body{
+	font-family: 'PT Sans', serif, sans-serif;
+	background: #333;
+	color:silver;
+	margin: 2.5%;
+}
+
+#main{
+	text-align: center;
+}
+
+section{
+	background: #222;
+	width: 47%;
+	border-radius: 20px;
+	padding: 10px;
+}
+
+#train-section{
+	float:left;
+}
+
+#test-section{
+	float:right;
+}
+
+section h2{
+	border-radius: 20px;
+	margin: 0;
+	margin-bottom: 20px;
+	color:white;
+}
+
+input[type=text], select{
+	background: white;
+	border-radius: 20px;
+	padding: 7px 10px;
+	border:none;
+	width: 70%;
+}
+
+input[type=submit]{
+	padding: 10px 20px;
+	border:none;
+	border-radius: 20px;
+	color:white;
+	width: 70%;
+	cursor:pointer;
+	font-weight: bold;
+}
+
+input[type=submit].go{
+	margin:20px;
+}
+
+input[type=submit]:hover{
+	background: white !important;
+	color:black;
+}
+
+input[type=file]{
+	display: none;
+}

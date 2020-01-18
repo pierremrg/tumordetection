@@ -48,4 +48,4 @@ def machine_learning():
 
 	return "Model " + str(algorithm) + " trained"
 
-app.run()
+app.run(port = 5007)

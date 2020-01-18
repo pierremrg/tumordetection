@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Brain tumor detection tool</title>
+	<link rel="stylesheet" type="text/css" href="interface.css">
+	<link href="https://fonts.googleapis.com/css?family=PT+Sans&display=swap" rel="stylesheet">
+</head>
+<body>
+
+	<div id="main">
+		<h1>Brain tumor detection tool</h1>
+
+		<section id="train-section">
+			<h2 style="background: #00A4DF;">Train section</h2>
+
+			<form action="" method="post" id="form-train">
+				<div>
+					<p><label for="db_url">Enter the URL of the pictures database:</label></p>
+					<input type="text" name="db_url" id="db_url" placeholder="URL of the pictures database (.zip)">
+				</div>
+
+				<div>
+					<p>Select the algorithms to train:</p>
+
+					<div style="text-align: left;width: 80%;margin:auto;">
+						<input type="checkbox" id="knn" name="knn">
+						<label for="knn">k-NN</label><br>
+
+						<input type="checkbox" id="gbc" name="gbc">
+						<label for="gbc">GBC</label><br>
+
+						<input type="checkbox" id="rfc" name="rfc">
+						<label for="rfc">RFC</label><br>
+
+						<input type="checkbox" id="svm" name="svm">
+						<label for="svm">SVM</label><br>
+
+						<input type="checkbox" id="mlp" name="mlp">
+						<label for="mlp">MLP</label><br>
+
+						<input type="checkbox" id="resnet" name="resnet">
+						<label for="resnet">ResNet</label><br>
+
+						<input type="checkbox" id="alexnet" name="alexnet">
+						<label for="alexnet">AlexNet</label><br>
+
+						<input type="checkbox" id="vgg" name="vgg">
+						<label for="vgg">VGG</label><br>
+
+						<input type="checkbox" id="cnnmedium" name="cnnmedium">
+						<label for="cnnmedium">CNN (Medium)</label><br>
+					</div>
+				</div>
+
+				<input type="submit" name="go" class="go" value="Let's train!" style="background: #00A4DF;">
+			</form>
+
+
+		</section>
+
+		<section id="test-section">
+			<h2 style="background: #D62246;">Test section</h2>
+
+					<p>Load a new picture from your machine:</p>
+
+			<form action="" method="post">
+				<input type="file" name="picture">
+
+				<input type="submit" value="Load picture" id="loadpicture" style="background: #D62246;">
+
+				<p>Select the algorithm to use to classify the picture:</p>
+
+				<div style="text-align: left;width: 80%;margin:auto;">
+					<input type="checkbox" id="test-knn" name="knn">
+					<label for="test-knn">k-NN</label><br>
+
+					<input type="checkbox" id="test-gbc" name="gbc">
+					<label for="test-gbc">GBC</label><br>
+
+					<input type="checkbox" id="test-rfc" name="rfc">
+					<label for="test-rfc">RFC</label><br>
+
+					<input type="checkbox" id="test-svm" name="svm">
+					<label for="test-svm">SVM</label><br>
+
+					<input type="checkbox" id="test-mlp" name="mlp">
+					<label for="test-mlp">MLP</label><br>
+
+					<input type="checkbox" id="test-resnet" name="resnet">
+					<label for="test-resnet">ResNet</label><br>
+
+					<input type="checkbox" id="test-alexnet" name="alexnet">
+					<label for="test-alexnet">AlexNet</label><br>
+
+					<input type="checkbox" id="test-vgg" name="vgg">
+					<label for="test-vgg">VGG</label><br>
+
+					<input type="checkbox" id="test-cnnmedium" name="cnnmedium">
+					<label for="test-cnnmedium">CNN (Medium)</label><br>
+				</div>
+
+				<input type="submit" name="go" class="go" value="Let's classify!" style="background: #D62246;">
+			</form>
+		</section>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<script src="interface.js"></script>
+</body>
+</html>
