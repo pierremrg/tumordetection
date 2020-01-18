@@ -81,6 +81,7 @@ class ModelTransferLearning():
         logging.info('ModelTransferLearning.show_accuracy')
 
         print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+        return(str(self.train_history[-1]), str(self.val_history[-1]))
     
     def save_model(self):
         logging.info('ModelTransferLearning.save_model')
@@ -92,6 +93,7 @@ class ModelTransferLearning():
 
         self.initDataLoader()
         self.training()
-        self.show_accuracy()
-        self.save_model()  
+        (train_acc, val_acc) = self.show_accuracy()
+        self.save_model()
+        return (train_acc, val_acc)
           

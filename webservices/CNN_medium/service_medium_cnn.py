@@ -33,8 +33,8 @@ def train_medium_cnn():
     
     cmc = ClassMediumCNN(images_directory, save_directory, batch_size, epochs)
 
-    cmc.run()
+    (train_acc, val_acc) = cmc.run()
 
-    return 'Medium CNN trained'
+    return '\"cnn\":{\"train_acc\":'+train_acc+' ,\"val_acc\":'+val_acc+'}'
 
-app.run()
+app.run(port = 5005)
