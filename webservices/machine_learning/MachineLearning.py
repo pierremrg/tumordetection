@@ -23,9 +23,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn import model_selection, neural_network
-from sklearn.model_selection import GridSearchCV
+from dask_ml.model_selection import GridSearchCV
 
-DASK_IP_ADRESS = "127.0.0.1:61158"
+DASK_IP_ADRESS = "127.0.0.1:59085"
 
 class MachineLearning():
 
@@ -90,6 +90,8 @@ class MachineLearning():
 			list_img = []
 			labels = []
 
+		logging.info("Finished reading images")
+
 		return list_img, labels
 		
 	# finds the best k-NN configuration for a given dataset
@@ -122,6 +124,7 @@ class MachineLearning():
 	# finds the best SVM configuration for a given dataset
 	# returns the best model and its associated arguments
 	def best_svm(self, imgs, labels):
+		logging.info("Finding best SVM: This may take a while..")
 		svm = SVC(gamma='auto', random_state=0, probability=True)
 		grid = {
 			'kernel': ['poly', 'linear', 'rbf', 'sigmoid'],
@@ -150,6 +153,7 @@ class MachineLearning():
 	# finds the best GBC configuration for a given dataset
 	# returns the best model and its associated arguments
 	def best_gbc(self, imgs, labels):
+		logging.info("Finding best GBC: This may take a while..")
 		gbc = GradientBoostingClassifier()
 		grid = {
 			"loss":["deviance"],
@@ -184,6 +188,7 @@ class MachineLearning():
 	# finds the best RFC configuration for a given dataset
 	# returns the best model and its associated arguments
 	def best_RFC(self, imgs, labels):
+		logging.info("Finding best RFC: This may take a while..")
 		rfc = RandomForestClassifier(n_estimators = 500)
 		grid = {
 			"max_depth": [i for i in range(4, 12)],
@@ -212,18 +217,21 @@ class MachineLearning():
 	# finds the best FC neural network configuration for a given dataset
 	# returns the best model and its associated arguments
 	def best_nn(self, imgs, labels):
+		logging.info("Finding best NN: This may take a while..")
 		nb_nodes = [32, 64, 128, 256] # Number of nodes per hidden layer
 		nb_layers = [2, 5, 8, 12, 20] # Number of hidden layers
 		nn = neural_network.MLPClassifier()
 		grid = {
 			'hidden_layer_sizes': [tuple([nb_node for i in range(nb_layer)]) for nb_layer in nb_layers for nb_node in nb_nodes]
 		}
-		gs = GridSearchCV(nn, grid, verbose=2, cv=5, n_jobs=-1)
+		gs = GridSearchCV(nn, grid, cv=5, n_jobs=-1)
 
 		# Dask distributed
 		c = dask.distributed.Client(DASK_IP_ADRESS)
-		with joblib.parallel_backend("dask", scatter=[imgs, labels]):
-			gs.fit(imgs, labels)
+		gs.fit(imgs, labels)
+
+		# with joblib.parallel_backend("dask", scatter=[imgs, labels]):
+			# gs.fit(imgs, labels)
 
 		return gs.best_estimator_, gs.best_params_
 		
