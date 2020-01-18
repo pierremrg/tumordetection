@@ -29,7 +29,7 @@ class ModelTransferLearning():
             self.model.classifier[6] = torch.nn.Linear(self.model.classifier[6].in_features, 2)
             self.model = self.model.to(device)
             self.optimizer = optim.SGD(self.model.parameters(), lr=1e-2, momentum = 0.1, weight_decay = 1e-3)
-            self.epochs = 1
+            self.epochs = 10
         elif (self.network == 'vgg'):
             self.model = models.vgg16(pretrained=True)
             num_features = self.model.classifier[6].in_features
@@ -45,7 +45,7 @@ class ModelTransferLearning():
             self.model.fc = nn.Linear(num_ftrs, 2)
             self.model = self.model.to(device)
             self.optimizer = optim.Adagrad(self.model.parameters(), lr=1e-3, weight_decay = 1e-3)
-            self.epochs = 1
+            self.epochs = 6
 
     def createOutputDirectory(self):
         try:
