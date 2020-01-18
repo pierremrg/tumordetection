@@ -73,4 +73,4 @@ def crop():
 	
 	return "Crop finished"
 
-app.run()
+app.run(port = 5004)

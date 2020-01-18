@@ -33,10 +33,8 @@ def train_medium_cnn():
     
     cmc = ClassMediumCNN(images_directory, save_directory, batch_size, epochs)
 
-    cmc.run()
+    (train_acc, val_acc) = cmc.run()
 
-    train_accuracy, val_accuracy = cmc.get_accuracy()
+    return '\"cnn\":{\"train_acc\":'+train_acc+' ,\"val_acc\":'+val_acc+'}'
 
-    return 'Medium CNN trained : train_accuracy = ' + str(train_accuracy) + ' val_accuracy = ' + str(val_accuracy)
-
-app.run()
+app.run(port = 5005)

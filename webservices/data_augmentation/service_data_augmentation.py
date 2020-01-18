@@ -50,4 +50,4 @@ def data_augment() :
 
     return 'Data augmentation done'
 
-app.run(host="0.0.0.0")
+app.run(host="0.0.0.0", port = 5002)

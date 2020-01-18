@@ -33,10 +33,8 @@ def train_transfer_learning():
     
     mtl = ModelTransferLearning(images_directory, save_directory, batch_size, network)
 
-    mtl.run()
+    (train_acc, val_acc) = mtl.run()
 
-    train_accuracy, val_accuracy = cmc.get_accuracy()
+    return '\"' + network + '\":{\"train_acc\":'+train_acc+' ,\"val_acc\":'+val_acc+'}'
 
-    return 'Model ' + str(network) + ' trained : train_accuracy = ' + str(train_accuracy) + ' val_accuracy = ' + str(val_accuracy)
-
-app.run()
+app.run(port = 5006)

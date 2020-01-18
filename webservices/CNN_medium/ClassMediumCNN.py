@@ -35,7 +35,7 @@ class ClassMediumCNN():
     def initDataLoader(self):
         logging.info('ClassMediumCNN.initDataLoader')
 
-        transform = transforms.Compose([
+        transform = transform = transforms.Compose([
                            transforms.ToTensor()                         
                        ])
         self.train_loader, self.val_loader = create_dataloader(self.images_directory, 
@@ -55,10 +55,11 @@ class ClassMediumCNN():
                                                             loss, 
                                                             optimizer, 
                                                             self.epochs)
-    def get_accuracy(self):
-        logging.info('ClassMediumCNN.get_accuracy')
+    def show_accuracy(self):
+    	logging.info('ClassMediumCNN.show_accuracy')
 
-        return self.train_history[-1], self.val_history[-1]
+    	print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+    	return(str(self.train_history[-1]), str(self.val_history[-1]))
     
     def save_model(self):
         logging.info('ClassMediumCNN.save_model')
@@ -70,5 +71,7 @@ class ClassMediumCNN():
 
         self.initDataLoader()
         self.training()
-        self.save_model()  
+        (train_acc, val_acc) = self.show_accuracy()
+        self.save_model()
+        return (train_acc, val_acc)
           

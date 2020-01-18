@@ -29,7 +29,7 @@ class ModelTransferLearning():
             self.model.classifier[6] = torch.nn.Linear(self.model.classifier[6].in_features, 2)
             self.model = self.model.to(device)
             self.optimizer = optim.SGD(self.model.parameters(), lr=1e-2, momentum = 0.1, weight_decay = 1e-3)
-            self.epochs = 10
+            self.epochs = 1
         elif (self.network == 'vgg'):
             self.model = models.vgg16(pretrained=True)
             num_features = self.model.classifier[6].in_features
@@ -45,7 +45,7 @@ class ModelTransferLearning():
             self.model.fc = nn.Linear(num_ftrs, 2)
             self.model = self.model.to(device)
             self.optimizer = optim.Adagrad(self.model.parameters(), lr=1e-3, weight_decay = 1e-3)
-            self.epochs = 6
+            self.epochs = 1
 
     def createOutputDirectory(self):
         try:
@@ -77,10 +77,11 @@ class ModelTransferLearning():
                                                             loss, 
                                                             self.optimizer, 
                                                             self.epochs)
-    def get_accuracy(self):
-        logging.info('ModelTransferLearning.get_accuracy')
+    def show_accuracy(self):
+        logging.info('ModelTransferLearning.show_accuracy')
 
-        return self.train_history[-1], self.val_history[-1]
+        print('Train accuracy : %f, Val accuracy : %f' % (self.train_history[-1], self.val_history[-1]))
+        return(str(self.train_history[-1]), str(self.val_history[-1]))
     
     def save_model(self):
         logging.info('ModelTransferLearning.save_model')
@@ -92,5 +93,7 @@ class ModelTransferLearning():
 
         self.initDataLoader()
         self.training()
-        self.save_model()  
+        (train_acc, val_acc) = self.show_accuracy()
+        self.save_model()
+        return (train_acc, val_acc)
           
