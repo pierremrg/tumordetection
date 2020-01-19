@@ -9,6 +9,8 @@ app.config["DEBUG"] = True
 
 @app.route('/api/v1/ml', methods=['GET'])
 def machine_learning():
+	algo_list = ["knn", "svm", "gbc", "rfc", "nn"]
+
 	# Check argument
 	if request.args.get('images_directory') is None :
 		return 'No "images_directory" given.'
@@ -32,20 +34,23 @@ def machine_learning():
 		app.logger.error("No images were read!")
 		return "Error: No images were read!"
 
-	if (algorithm == "knn"):
-		ml.knn(ml.imgs, ml.labels)
-	elif (algorithm == "svm"):
-		ml.svm(ml.imgs, ml.labels)
-	elif (algorithm == "gbc"):
-		ml.gbc(ml.imgs, ml.labels)
-	elif (algorithm == "rfc"):
-		ml.rfc(ml.imgs, ml.labels)
-	elif (algorithm == "nn"):
-		ml.nn(ml.imgs, ml.labels)
+	if algorithm in algo_list:
+		score = ml.train(algorithm, ml.imgs, ml.labels)
 	else:
 		app.logger.warning("Unexpected algorithm choice, choosing default!")
-		ml.svm(ml.imgs, ml.labels)
+		score = ml.train("svm", ml.imgs, ml.labels)
 
-	return "Model " + str(algorithm) + " trained"
+	# if (algorithm == "knn"):
+		# ml.knn(ml.imgs, ml.labels)
+	# elif (algorithm == "svm"):
+		# ml.svm(ml.imgs, ml.labels)
+	# elif (algorithm == "gbc"):
+		# ml.gbc(ml.imgs, ml.labels)
+	# elif (algorithm == "rfc"):
+		# ml.rfc(ml.imgs, ml.labels)
+	# elif (algorithm == "nn"):
+		# ml.nn(ml.imgs, ml.labels)
+
+	return "Model " + str(algorithm) + " trained, precision: " + str(score)
 
 app.run(port = 5007)
