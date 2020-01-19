@@ -54,7 +54,8 @@ def prediction():
 		if label == -1:
 			return 'Error model '+str(algo)+' is not trained yet!\nTrain this model first before using it for predictions'
 		else:
-			return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label) + ' - Probability : ' + str(proba)
+			#return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label) + ' - Probability : ' + str(proba)
+			return '\"' + str(algo) + '\":{\"label\":'+str(label)+' ,\"proba\":'+str(proba)+'}'
 
 	elif algo in list_algo_ml:
 		pred = Prediction_ML(directory_from, algo, directory_img)
@@ -63,9 +64,10 @@ def prediction():
 		if label == -1:
 			return 'Error model '+str(algo)+' is not trained yet!\nTrain this model first before using it for predictions'
 		else:
-			return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label)
+			#return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label)
+			return '\"' + str(algo) + '\":{\"label\":'+str(label)+'}'
 
 	else:
 		return 'Unexpected error, ' + str(algo) + ' is not part of the supported algorithms!'
 
-app.run(port=5007)
+app.run(host="0.0.0.0", port=5007)
