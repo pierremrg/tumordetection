@@ -35,22 +35,12 @@ def machine_learning():
 		return "Error: No images were read!"
 
 	if algorithm in algo_list:
-		score = ml.train(algorithm, ml.imgs, ml.labels)
+		score_train, score_test = ml.train(algorithm, ml.imgs, ml.labels)
 	else:
 		app.logger.warning("Unexpected algorithm choice, choosing default!")
-		score = ml.train("svm", ml.imgs, ml.labels)
+		algorithm = "svm"
+		score_train, score_test = ml.train(algorithm, ml.imgs, ml.labels)
 
-	# if (algorithm == "knn"):
-		# ml.knn(ml.imgs, ml.labels)
-	# elif (algorithm == "svm"):
-		# ml.svm(ml.imgs, ml.labels)
-	# elif (algorithm == "gbc"):
-		# ml.gbc(ml.imgs, ml.labels)
-	# elif (algorithm == "rfc"):
-		# ml.rfc(ml.imgs, ml.labels)
-	# elif (algorithm == "nn"):
-		# ml.nn(ml.imgs, ml.labels)
-
-	return "Model " + str(algorithm) + " trained, precision: " + str(score)
+	return '\"' + algorithm + '\":{\"train_acc\":'+score_train+' ,\"val_acc\":'+score_test+'}'
 
 app.run(port = 5007)

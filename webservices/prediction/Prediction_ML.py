@@ -38,8 +38,15 @@ class Prediction_ML():
 		try:
 			model = joblib.load(self.directory_from + self.algo + ".model")
 			label = model.predict([self.image])
-			return label[0]
+			try:
+				array_proba = model.predict_proba([self.image])[0]
+				proba = array_proba[label[0]]
+			except:
+				proba = -1
+				
+			return label[0], proba
+			
 		except IOError as err:
 			logging.error('Error model '+str(self.algo)+' is not trained yet!')
 			logging.error('Train this model first before using it for predictions')
-			return -1
+			return -1, 1
