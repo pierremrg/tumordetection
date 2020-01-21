@@ -22,6 +22,7 @@ section{
 	width: 47%;
 	border-radius: 20px;
 	padding: 10px;
+	margin-bottom: 20px;
 }
 
 #train-section{
@@ -66,6 +67,72 @@ input[type=submit]:hover{
 	color:black;
 }
 
+input[type=submit][disabled=true]{
+	background: gray !important;
+	cursor:not-allowed;
+}
+
+input[type=submit][disabled=true]:hover{
+	color: white !important;
+}
+
 input[type=file]{
 	display: none;
+}
+
+.results{
+	padding-bottom: 20px;
+	display: none;
+}
+
+.result-classifier{
+	background: #444;
+	margin: 10px 15%;
+	border-radius: 20px;
+	padding: 10px 20px;
+}
+
+p.classifier{
+	text-align: left;
+	margin: 0 0 10px 0;
+	font-weight: bold;
+	color:white;
+}
+
+p.small{
+	margin: 0;
+	text-align: left;
+	font-size: 0.8em;
+}
+
+.progress{
+	height: 10px;
+	background: #222;
+	margin: auto;
+	margin-bottom: 5px;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.progress .complete{
+	height: 100%;
+	background: gray;
+	border-radius: 10px;
+}
+
+.icon{
+	color:#444;
+	font-size: 0.7em;
+	border-radius: 4px;
+	padding: 1px 7px;
+	margin-left: 10px;
+	display: inline-block;
+	text-transform: uppercase;
+}
+
+.icon.yes{
+	background: lightgreen;
+}
+.icon.no{
+	background: salmon;
 }

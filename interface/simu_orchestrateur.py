@@ -1,0 +1,37 @@
+import flask
+from flask import request
+from flask_cors import CORS
+import json
+
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+@app.route('/api/v1/simu_orchestrateur', methods=['POST'])
+def normalize():
+
+    if request.files['picture'] is None:
+        return json.dumps(None)
+
+    print(request.form.getlist('classifiers'))
+
+    data = {
+        'returns_predictions': {
+            'alexnet': {
+                'label': 1,
+                'proba': 0.6
+            },
+            'resnet': {
+                'label': 0,
+                'proba': 0.85,
+            },
+            'knn': {
+                'label': 1,
+                'proba': 0.92
+            }
+        }
+    }
+
+    return json.dumps(data)
+
+app.run(host="0.0.0.0", port="5003")
