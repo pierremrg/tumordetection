@@ -55,6 +55,7 @@
 				<input type="submit" name="go" class="go" value="Let's train!" style="background: #00A4DF;">
 			</form>
 
+			<div class="results"></div>
 
 		</section>
 
@@ -64,7 +65,7 @@
 					<p>Load a new picture from your machine:</p>
 
 			<form action="" method="post">
-				<input type="file" name="picture">
+				<input type="file" name="picture" id="picture">
 
 				<input type="submit" value="Load picture" id="loadpicture" style="background: #D62246;">
 
@@ -99,8 +100,14 @@
 					<label for="test-cnnmedium">CNN (Medium)</label><br>
 				</div>
 
-				<input type="submit" name="go" class="go" value="Let's classify!" style="background: #D62246;">
+				<input type="submit" name="go" class="go" value="Let's classify!" disabled="true" id="lets-classify" style="background: #D62246;">
 			</form>
+
+			<div class="results">
+				<div class="result-classifier"><p class="classifier">knn<span class="icon no">YES</span></p>
+					<p class="small">Validation accuracy: 92%</p><div class="progress"><div class="complete" style="width:92%;background:#D62246"></div></div></div>
+			</div>
+
 		</section>
 	</div>
 
