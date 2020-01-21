@@ -27,7 +27,10 @@ def machine_learning():
 	save_directory = request.args.get('save_directory')
 
 	# creates new MachineLearning object
-	ml = MachineLearning(images_directory, save_directory)
+	if algorithm == "nn":
+		ml = MachineLearning(images_directory, save_directory, 32)
+	else:
+		ml = MachineLearning(images_directory, save_directory)
 	
 	# error detection
 	if len(ml.imgs) == 0 or len(ml.labels) == 0:
@@ -41,6 +44,6 @@ def machine_learning():
 		algorithm = "svm"
 		score_train, score_test = ml.train(algorithm, ml.imgs, ml.labels)
 
-	return '\"' + algorithm + '\":{\"train_acc\":'+score_train+' ,\"val_acc\":'+score_test+'}'
+	return '\"' + algorithm + '\":{\"train_acc\":'+str(score_train)+' ,\"val_acc\":'+str(score_test)+'}'
 
 app.run(port = 5007)
