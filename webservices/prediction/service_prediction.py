@@ -59,13 +59,13 @@ def prediction():
 
 	elif algo in list_algo_ml:
 		pred = Prediction_ML(directory_from, algo, directory_img)
-		label = pred.run()
+		label, proba = pred.run()
 		
 		if label == -1:
 			return 'Error model '+str(algo)+' is not trained yet!\nTrain this model first before using it for predictions'
 		else:
 			#return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label)
-			return '\"' + str(algo) + '\":{\"label\":'+str(label)+'}'
+			return '\"' + str(algo) + '\":{\"label\":'+str(label)+' ,\"proba\":'+str(proba)+'}'
 
 	else:
 		return 'Unexpected error, ' + str(algo) + ' is not part of the supported algorithms!'

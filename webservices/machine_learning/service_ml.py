@@ -40,17 +40,6 @@ def machine_learning():
 		app.logger.warning("Unexpected algorithm choice, choosing default!")
 		score = ml.train("svm", ml.imgs, ml.labels)
 
-	# if (algorithm == "knn"):
-		# ml.knn(ml.imgs, ml.labels)
-	# elif (algorithm == "svm"):
-		# ml.svm(ml.imgs, ml.labels)
-	# elif (algorithm == "gbc"):
-		# ml.gbc(ml.imgs, ml.labels)
-	# elif (algorithm == "rfc"):
-		# ml.rfc(ml.imgs, ml.labels)
-	# elif (algorithm == "nn"):
-		# ml.nn(ml.imgs, ml.labels)
-
 	return "Model " + str(algorithm) + " trained, precision: " + str(score)
 
 app.run(port = 5007)
