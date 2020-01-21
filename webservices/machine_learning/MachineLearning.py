@@ -133,4 +133,4 @@ class MachineLearning():
 		
 		logging.info("Score on training set: %.4f, score on test set: %.4f" %(score_train, score_test) )
 
-		return score_test
+		return (score_train, score_test)
