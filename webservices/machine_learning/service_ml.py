@@ -27,7 +27,10 @@ def machine_learning():
 	save_directory = request.args.get('save_directory')
 
 	# creates new MachineLearning object
-	ml = MachineLearning(images_directory, save_directory)
+	if algorithm == "nn":
+		ml = MachineLearning(images_directory, save_directory, 32)
+	else:
+		ml = MachineLearning(images_directory, save_directory)
 	
 	# error detection
 	if len(ml.imgs) == 0 or len(ml.labels) == 0:
@@ -37,21 +40,10 @@ def machine_learning():
 	if algorithm in algo_list:
 		score_train, score_test = ml.train(algorithm, ml.imgs, ml.labels)
 	else:
-		algorithm = "svm"
 		app.logger.warning("Unexpected algorithm choice, choosing default!")
+		algorithm = "svm"
 		score_train, score_test = ml.train(algorithm, ml.imgs, ml.labels)
 
-	# if (algorithm == "knn"):
-		# ml.knn(ml.imgs, ml.labels)
-	# elif (algorithm == "svm"):
-		# ml.svm(ml.imgs, ml.labels)
-	# elif (algorithm == "gbc"):
-		# ml.gbc(ml.imgs, ml.labels)
-	# elif (algorithm == "rfc"):
-		# ml.rfc(ml.imgs, ml.labels)
-	# elif (algorithm == "nn"):
-		# ml.nn(ml.imgs, ml.labels)
-
-	return '\"' + str(algorithm) + '\":{\"train_acc\":'+str(score_train)+' ,\"val_acc\":'+str(score_test)+'}'
+	return '\"' + algorithm + '\":{\"train_acc\":'+str(score_train)+' ,\"val_acc\":'+str(score_test)+'}'
 
 app.run(port = 5007)
