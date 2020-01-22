@@ -19,15 +19,15 @@ def normalize():
         'returns_predictions': {
             'alexnet': {
                 'label': 1,
-                'proba': 0.6
+                'proba': 0.98
             },
             'resnet': {
-                'label': 0,
-                'proba': 0.85,
+                'label': 1,
+                'proba': 0.91,
             },
             'knn': {
-                'label': 1,
-                'proba': 0.92
+                'label': 0,
+                'proba': 0.42
             }
         }
     }
