@@ -22,7 +22,7 @@
 				<div>
 					<p>Select the algorithms to train:</p>
 
-					<div style="text-align: left;width: 80%;margin:auto;">
+					<div style="text-align: left;width: 70%;margin:auto;">
 						<input type="checkbox" id="knn" name="knn">
 						<label for="knn">k-NN</label><br>
 
@@ -55,6 +55,10 @@
 				<input type="submit" name="go" class="go" value="Let's train!" style="background: #00A4DF;">
 			</form>
 
+			<p class="load">
+				<img src="load-train.gif" alt="load-train">
+			</p>
+
 			<div class="results"></div>
 
 		</section>
@@ -71,7 +75,7 @@
 
 				<p>Select the algorithms to use to classify the picture:</p>
 
-				<div style="text-align: left;width: 80%;margin:auto;">
+				<div style="text-align: left;width: 70%;margin:auto;">
 					<input type="checkbox" id="test-knn" name="knn">
 					<label for="test-knn">k-NN</label><br>
 
@@ -102,6 +106,10 @@
 
 				<input type="submit" name="go" class="go" value="Let's classify!" disabled="true" id="lets-classify" style="background: #D62246;">
 			</form>
+
+			<p class="load">
+				<img src="load-test.gif" alt="load-test">
+			</p>
 
 			<div class="results">
 				<div class="result-classifier"><p class="classifier">knn<span class="icon no">YES</span></p>
