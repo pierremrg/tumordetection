@@ -23,11 +23,16 @@ $(function(){
 			classifiers: checked_classifiers
 		};
 
+		$('#train-section .load').fadeIn();
+
 		$.ajax({
 			url: 'simu_orchestrateur.php',
 			type: 'POST',
 			data: data,
 			dataType: 'json',
+			complete: function(){
+				$('#train-section .load').hide();
+			},
 			success: function(data){
 				$('#train-section .results').empty();
 
@@ -93,14 +98,19 @@ $(function(){
 
 		ajaxPicture.append('classifiers', checked_classifiers);
 
+		$('#test-section .load').fadeIn();
+
 		$.ajax({
-			url: 'http://localhost:5003/api/v1/simu_orchestrateur',
+			url: 'http://localhost:5015/api/v1/simu_orchestrateur',
 			type: 'POST',
 			data: ajaxPicture,
 			dataType: 'json',
 			cache: false,
 			contentType: false,
 			processData: false,
+			complete: function(){
+				$('#test-section .load').hide();
+			},
 			success: function(data){
 
 				if(data === null){

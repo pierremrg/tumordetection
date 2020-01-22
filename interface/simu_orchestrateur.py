@@ -2,6 +2,7 @@ import flask
 from flask import request
 from flask_cors import CORS
 import json
+import time
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -9,6 +10,8 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route('/api/v1/simu_orchestrateur', methods=['POST'])
 def normalize():
+
+    time.sleep(2)
 
     if request.files['picture'] is None:
         return json.dumps(None)

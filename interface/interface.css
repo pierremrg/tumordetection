@@ -136,3 +136,9 @@ p.small{
 .icon.no{
 	background: salmon;
 }
+
+p.load{
+	text-align: center;
+	width:100%;
+	display: none;
+}
