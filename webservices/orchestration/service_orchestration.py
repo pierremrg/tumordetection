@@ -1,5 +1,6 @@
 import flask
 from flask import request
+from flask_cors import CORS
 import os
 import json
 
@@ -7,6 +8,7 @@ from Orchestration import Orchestration
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 list_algo_deep = ["cnn", "resnet", "alexnet", "vgg"]
 list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
@@ -15,13 +17,16 @@ list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 @app.route('/api/v1/orchestrationTraining', methods=['POST'])
 def orchestrationTraining():
 
-    #JSON (url_db & classifiers)
-    if request.args.get('json') is None:
-        return 'No "json" given.'
-    else:
-        data = request.args.get('json')
+    # #JSON (url_db & classifiers)
+    # if request.args.get('json') is None:
+    #     return 'No "json" given.'
+    # else:
+    #     data = request.args.get('json')
 
-    data = json.loads(data)
+    # data = json.loads(data)
+
+    data = request.get_json()
+
     url = data["url_db"]
     classifiers = data["classifiers"]
 

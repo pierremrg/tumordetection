@@ -36,13 +36,8 @@ class MachineLearning():
 	def __init__(self, input_folder, model_folder, img_size = 240):
 		self.input_folder = input_folder
 		self.model_folder = model_folder
-<<<<<<< HEAD
 		self.hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 		self.imgs, self.labels = self.read_images(input_folder, 240)
-
-=======
-		self.imgs, self.labels = self.read_images(input_folder, img_size)
->>>>>>> b72daed7cb133a3e3d151dd72ead83e994334112
 		self.default = "svm"
 	
 	# reads images from a directory and resizes them
@@ -128,7 +123,6 @@ class MachineLearning():
 		
 	# trains a model using the best parameters and returns the score
 	def train(self, algorithm, imgs, labels):
-		t_start = time.process_time()
 		params = self.get_params(algorithm)
 		model = self.get_model(algorithm, params)
 		logging.info("Training %s with the following parameters:" %(algorithm) )
@@ -155,18 +149,9 @@ class MachineLearning():
 		logging.info("Training complete, saving model %s to file" %(algorithm) )
 
 		# saving the model to file
-<<<<<<< HEAD
 		with self.hdfs_client.write('/' + str(self.model_folder) + str(algorithm) + ".model") as writer:
 			joblib.dump(model, writer)
 
 		logging.info("Score on training set: %.4f, score on test set: %.4f" %(score_train, score_test) )
 
 		return score_train, score_test
-=======
-		joblib.dump(model, str(self.model_folder) + str(algorithm) + ".model")
-		
-		t_end = time.process_time()
-		logging.info("Score on training set: %.4f, score on test set: %.4f, time taken: %4.f" %(score_train, score_test, (t_end-t_start) ) )
-
-		return (score_train, score_test)
->>>>>>> b72daed7cb133a3e3d151dd72ead83e994334112

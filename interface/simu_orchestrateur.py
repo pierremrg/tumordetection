@@ -34,4 +34,4 @@ def normalize():
 
     return json.dumps(data)
 
-app.run(host="0.0.0.0", port="5003")
+app.run(host="0.0.0.0", port="5015")

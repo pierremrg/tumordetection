@@ -18,8 +18,8 @@ class Orchestration():
 
 		dir_img = 'images/'
 		dir_img_augm = 'images_augmented/'
-		dir_img_augm_crop = 'images_augmented_crop/'
-		dir_img_norm = 'new_data_norm/'
+		dir_img_augm_crop = 'images_crop/'
+		dir_img_norm = 'images_norm/'
 		dir_algo = 'algo_trained/'
 
 		#Liste de String de format JSON : "algo" : {"train_acc":train_acc, "val_acc":val_acc}

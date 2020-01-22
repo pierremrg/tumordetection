@@ -15,13 +15,10 @@ list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 
 @app.route('/api/v1/prediction', methods=['GET'])
 def prediction():
-	if request.args.get('directory_from') is None:
-		return 'No "directory_from" given.'
+	if request.args.get('directory_algo') is None:
+		return 'No "directory_algo" given.'
 	else:
-		directory_from = request.args.get('directory_from')
-
-	if not os.path.exists(directory_from):
-		return '"directory_from" cannot be found.'
+		directory_algo = request.args.get('directory_algo')
 
 	if request.args.get('algo') is None:
 		return 'No "algo" given.'
@@ -30,25 +27,14 @@ def prediction():
 	else:
 		algo = request.args.get('algo')
 
-	if request.args.get('directory_img') is None:
-		return 'No "directory_img" given.'
+	if request.args.get('path_img') is None:
+		return 'No "path_img" given.'
 	else:
-		directory_img = request.args.get('directory_img')
-
-	if not os.path.exists(directory_img):
-		return '"directory_img" cannot be found.'
-
-	# if request.args.get('name_img') is None:
-		# return 'No "name_img" given.'
-	# else:
-		# name_img = request.args.get('name_img')
-
-	# if not os.path.exists(directory_img + name_img):
-		# return 'img ' + name_img + ' cannot be found.'
+		path_img = request.args.get('path_img')
 
 	# type algo choisi
 	if algo in list_algo_deep:
-		pred = Prediction(directory_from, algo, directory_img)
+		pred = Prediction(directory_algo, algo, path_img)
 		label, proba = pred.run()
 
 		if label == -1:
@@ -58,7 +44,7 @@ def prediction():
 			return '\"' + str(algo) + '\":{\"label\":'+str(label)+' ,\"proba\":'+str(proba)+'}'
 
 	elif algo in list_algo_ml:
-		pred = Prediction_ML(directory_from, algo, directory_img)
+		pred = Prediction_ML(directory_algo, algo, path_img)
 		label, proba = pred.run()
 		
 		if label == -1:

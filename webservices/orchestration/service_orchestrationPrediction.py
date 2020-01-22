@@ -1,29 +1,40 @@
 import flask
 from flask import request
+from flask_cors import CORS
 import os
 import json
+import pandas as pd
 
-from OrchestrationPrediction import OrchestrationPrediction
+from hdfs import InsecureClient
+
+#from OrchestrationPrediction import OrchestrationPrediction
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 list_algo_deep = ["cnn", "resnet", "alexnet", "vgg"]
 list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 
 # Pour lancer ce service en local, il faut avoir modifié les ports des microservices (par ex, app.run(port = 5001)) car sinon impossible de lancer plusieurs apps flask en même temps
-@app.route('/api/v1/orchestrationPrediction', methods=['GET'])
+@app.route('/api/v1/orchestrationPrediction', methods=['POST'])
 def orchestrationPrediction():
 
-    #JSON (url_db & classifiers)
-    if request.args.get('json') is None:
-        return 'No "json" given.'
-    else:
-        data = request.args.get('json')
+    if request.files['picture'] is None:
+        return json.dumps(None)
 
-    data = json.loads(data)
-    url_img = data["url_img"]
-    classifiers = data["classifiers"]
+    hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+
+    picture = request.files['picture']
+
+    with hdfs_client.write('/image_test/test.jpg') as writer:
+        picture.save(writer)
+
+    data = pd.DataFrame(['/image_test/test.jpg'], columns=['Path'])
+    with hdfs_client.write('/image_test/data.csv', encoding = 'utf-8') as writer:
+        data.to_csv(writer, index_label='index')
+
+    classifiers = request.form.getlist('classifiers')
 
     list_algo = []
 
@@ -32,8 +43,9 @@ def orchestrationPrediction():
             return algo + ' is an incorrect algo.'
         list_algo.append(algo)
 
-    orchPred = OrchestrationPrediction(url_img, list_algo)
+    orchPred = OrchestrationPrediction('test.jpg', list_algo)
     list_returns_predict = orchPred.run()
+
     string_result = '{ \"returns_predictions\": {'
     for i in range(len(list_returns_predict)):
         string_result += list_returns_predict[i]
@@ -41,6 +53,7 @@ def orchestrationPrediction():
             string_result += '}}'
         else:
             string_result += ','
+
     return json.loads(string_result)
 
 app.run(host="0.0.0.0", port = 5013)
