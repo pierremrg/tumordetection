@@ -1,8 +1,9 @@
 import flask
 from flask import request
 import os
+import json
 
-from Prediction import Prediction
+#from Prediction import Prediction
 from Prediction_ML import Prediction_ML
 
 app = flask.Flask(__name__)
@@ -34,7 +35,7 @@ def prediction():
 
 	# type algo choisi
 	if algo in list_algo_deep:
-		pred = Prediction(directory_algo, algo, path_img)
+		#pred = Prediction(directory_algo, algo, path_img)
 		label, proba = pred.run()
 
 		if label == -1:
@@ -51,9 +52,14 @@ def prediction():
 			return 'Error model '+str(algo)+' is not trained yet!\nTrain this model first before using it for predictions'
 		else:
 			#return 'Prediction using ' + str(algo) + ' done, Label found : ' + str(label)
-			return '\"' + str(algo) + '\":{\"label\":'+str(label)+' ,\"proba\":'+str(proba)+'}'
-
+			#return '\"' + str(algo) + '\":{\"label\":'+str(label)+' ,\"proba\":'+str(proba)+'}'
+			data = {
+					str(algo): {
+						'label': str(label),
+						'proba': str(proba)
+					}}
+			return json.dumps(data)
 	else:
 		return 'Unexpected error, ' + str(algo) + ' is not part of the supported algorithms!'
 
-app.run(host="0.0.0.0", port=5007)
+app.run(host="0.0.0.0", port=5020)

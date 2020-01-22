@@ -41,9 +41,9 @@ class Prediction_ML():
 
 	def run(self):
 		try:
-			with self.hdfs_client(self.directory_from + self.algo + ".model") as reader:
-				model = joblib.load(reader)
-
+			self.hdfs_client.download(self.directory_algo + self.algo + ".model", self.algo + ".model") 
+			model = joblib.load(self.algo + ".model")
+			os.remove(self.algo + ".model")
 			label = model.predict([self.image])
 			try:
 				array_proba = model.predict_proba([self.image])[0]

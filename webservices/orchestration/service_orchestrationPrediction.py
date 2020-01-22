@@ -7,7 +7,7 @@ import pandas as pd
 
 from hdfs import InsecureClient
 
-#from OrchestrationPrediction import OrchestrationPrediction
+from OrchestrationPrediction import OrchestrationPrediction
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -20,41 +20,38 @@ list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 @app.route('/api/v1/orchestrationPrediction', methods=['POST'])
 def orchestrationPrediction():
 
-    if request.files['picture'] is None:
-        return json.dumps(None)
+	if request.files['picture'] is None:
+		return json.dumps(None)
 
-    hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+	hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 
-    picture = request.files['picture']
+	picture = request.files['picture']
 
-    with hdfs_client.write('/image_test/test.jpg') as writer:
-        picture.save(writer)
+	with hdfs_client.write('/image_test/test.jpg') as writer:
+		picture.save(writer)
 
-    data = pd.DataFrame(['/image_test/test.jpg'], columns=['Path'])
-    with hdfs_client.write('/image_test/data.csv', encoding = 'utf-8') as writer:
-        data.to_csv(writer, index_label='index')
+	data = pd.DataFrame(['test.jpg'], columns=['Path'])
+	with hdfs_client.write('/image_test/data.csv', encoding = 'utf-8') as writer:
+		data.to_csv(writer, index_label='index')
 
-    classifiers = request.form.getlist('classifiers')
+	classifiers = request.form.getlist('classifiers')
 
-    list_algo = []
+	list_algo = []
 
-    for algo in classifiers:
-        if not(algo in list_algo_deep) and not(algo in list_algo_ml):
-            return algo + ' is an incorrect algo.'
-        list_algo.append(algo)
 
-    orchPred = OrchestrationPrediction('test.jpg', list_algo)
-    list_returns_predict = orchPred.run()
+	orchPred = OrchestrationPrediction('test.jpg', classifiers)
+	list_returns_predict = orchPred.run()
 
-    string_result = '{ \"returns_predictions\": {'
-    for i in range(len(list_returns_predict)):
-        string_result += list_returns_predict[i]
-        if i == len(list_returns_predict) - 1:
-            string_result += '}}'
-        else:
-            string_result += ','
+	print('ok4')
+	print(list_returns_predict)
 
-    return json.loads(string_result)
+	data = {}
+	data['returns_predictions'] = {}
+
+	for res in list_returns_predict:
+		data['returns_predictions'][list(res.keys())[0]] = res[list(res.keys())[0]]
+
+	return json.dumps(data)
 
 app.run(host="0.0.0.0", port = 5013)
 
