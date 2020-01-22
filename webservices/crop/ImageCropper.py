@@ -8,14 +8,6 @@ import numpy as np
 
 from hdfs import InsecureClient
 
-formatter = logging.Formatter(fmt = '%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-logger = logging.getLogger()
-logger.addHandler(stream_handler)
-logger.setLevel(logging.INFO)
-
 class ImageCropper:
 	# init
 	def __init__(self, input_folder, image_path, output_folder):

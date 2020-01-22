@@ -28,16 +28,21 @@ logger.addHandler(stream_handler)
 logger.setLevel(logging.INFO)
 
 def create_csv(directory_to):
-    hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
-    list_yes = hdfs_client.list('/' + directory_to + 'yes')
-    list_images = ['yes/' + name for name in list_yes]
-    list_no = hdfs_client.list('/' + directory_to + 'no/')
-    list_images += ['no/' + name for name in list_no]
+	hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+	# Cas où on entraine
+	if (len(hdfs_client.list('/' + directory_to)) != 1):
+		list_yes = hdfs_client.list('/' + directory_to + 'yes')
+		list_images = ['yes/' + name for name in list_yes]
+		list_no = hdfs_client.list('/' + directory_to + 'no/')
+		list_images += ['no/' + name for name in list_no]
+	else:
+		# Cas où on prédit, on a une image
+		list_images = hdfs_client.list('/' + directory_to)
 
-    data = pd.DataFrame(list_images, columns=['Path'])
+	data = pd.DataFrame(list_images, columns=['Path'])
 
-    with hdfs_client.write('/' + directory_to + 'data.csv', encoding = 'utf-8') as writer:
-    	data.to_csv(writer, index_label='index')
+	with hdfs_client.write('/' + directory_to + 'data.csv', encoding = 'utf-8') as writer:
+		data.to_csv(writer, index_label='index')
 
 def compute_crop(df, input_folder, output_folder):
 

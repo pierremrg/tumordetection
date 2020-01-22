@@ -17,16 +17,21 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 def create_csv(directory_to):
-    hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
-    list_yes = hdfs_client.list('/' + directory_to + 'yes')
-    list_images = ['yes/' + name for name in list_yes]
-    list_no = hdfs_client.list('/' + directory_to + 'no/')
-    list_images += ['no/' + name for name in list_no]
+	hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+	# Cas où on entraine
+	if (len(hdfs_client.list('/' + directory_to)) != 1):
+		list_yes = hdfs_client.list('/' + directory_to + 'yes')
+		list_images = ['yes/' + name for name in list_yes]
+		list_no = hdfs_client.list('/' + directory_to + 'no/')
+		list_images += ['no/' + name for name in list_no]
+	# Cas où on prédit, on a une image
+	else:
+		list_images = hdfs_client.list('/' + directory_to)
 
-    data = pd.DataFrame(list_images, columns=['Path'])
+	data = pd.DataFrame(list_images, columns=['Path'])
 
-    with hdfs_client.write('/' + directory_to + 'data.csv', encoding = 'utf-8') as writer:
-    	data.to_csv(writer, index_label='index')
+	with hdfs_client.write('/' + directory_to + 'data.csv', encoding = 'utf-8') as writer:
+		data.to_csv(writer, index_label='index')
 
 
 def compute_norm(df, from_dir, out_dir):
@@ -35,22 +40,22 @@ def compute_norm(df, from_dir, out_dir):
 
 	# Resize images
 	imgn.resizeImages(
-	    # Resizing mode
-	    # Options are: MODE_PADDING, MODE_RESIZING, MODE_RESIZING_KEEP_RATIO
-	    mode = ImageNormalizer.MODE_RESIZING_KEEP_RATIO,
+		# Resizing mode
+		# Options are: MODE_PADDING, MODE_RESIZING, MODE_RESIZING_KEEP_RATIO
+		mode = ImageNormalizer.MODE_RESIZING_KEEP_RATIO,
 
-	    # Background color
-	    # Can be a string or a hex code
-	    background_color = 'black',
+		# Background color
+		# Can be a string or a hex code
+		background_color = 'black',
 
-	    # Shape of the normalized image
-	    # Options are: SHAPE_SQUARE, SHAPE_RECTANGLE
-	    shape = ImageNormalizer.SHAPE_SQUARE,
+		# Shape of the normalized image
+		# Options are: SHAPE_SQUARE, SHAPE_RECTANGLE
+		shape = ImageNormalizer.SHAPE_SQUARE,
 
-	    # Size of the picture if square shape is used
-	    square_size = 1000,
+		# Size of the picture if square shape is used
+		square_size = 1000,
 
-	    to_grayscale = True
+		to_grayscale = True
 	)
 
 @app.route('/api/v1/normalize', methods=['POST'])

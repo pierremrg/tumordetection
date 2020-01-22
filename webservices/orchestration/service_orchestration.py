@@ -12,7 +12,7 @@ list_algo_deep = ["cnn", "resnet", "alexnet", "vgg"]
 list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 
 # Pour lancer ce service en local, il faut avoir modifié les ports des microservices (par ex, app.run(port = 5001)) car sinon impossible de lancer plusieurs apps flask en même temps
-@app.route('/api/v1/orchestrationTraining', methods=['GET'])
+@app.route('/api/v1/orchestrationTraining', methods=['POST'])
 def orchestrationTraining():
 
     #JSON (url_db & classifiers)

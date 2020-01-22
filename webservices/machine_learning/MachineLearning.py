@@ -10,12 +10,14 @@ stream_handler.setFormatter(formatter)
 
 logger = logging.getLogger()
 logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 # Dask distributed computing
 #import dask.distributed
 import joblib
+from dask.distributed import Client, wait
+import dask
 
 # Scikit-learn machine learning
 from sklearn.model_selection import train_test_split
@@ -23,9 +25,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn import model_selection, neural_network
-from dask_ml.model_selection import GridSearchCV
 
-#DASK_IP_ADRESS = "127.0.0.1:59085"
+from hdfs import InsecureClient
+DASK_IP_ADRESS = "192.168.1.4:8786"
 
 class MachineLearning():
 
@@ -33,6 +35,7 @@ class MachineLearning():
 	def __init__(self, input_folder, model_folder):
 		self.input_folder = input_folder
 		self.model_folder = model_folder
+		self.hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 		self.imgs, self.labels = self.read_images(input_folder, 240)
 		self.default = "svm"
 	
@@ -44,20 +47,22 @@ class MachineLearning():
 		logging.info('read_images')
 	
 		try:
-			for name in os.listdir(directory + 'yes'):
+			for name in self.hdfs_client.list('/' + directory + 'yes'):
 				if name == "Thumbs.db":
 					continue
-				img = Image.open(directory + 'yes/'+ name)
+				with self.hdfs_client.read('/' + directory + 'yes/' + name) as reader:
+					img = Image.open(reader)
 				if img_size != 0:
 					img = img.resize((img_size, img_size))
 				img = img.convert('L').convert('RGB')
 				list_img.append(np.asarray(img).flatten())
 				labels.append(1)
 				
-			for name in os.listdir(directory + 'no'):
+			for name in self.hdfs_client.list('/' + directory + 'no'):
 				if name == "Thumbs.db":
 					continue
-				img = Image.open(directory + 'no/'+ name)
+				with self.hdfs_client.read('/' + directory + 'no/' + name) as reader:
+					img = Image.open(reader)
 				if img_size != 0:
 					img = img.resize((img_size, img_size))
 				img = img.convert('L').convert('RGB')
@@ -243,7 +248,7 @@ class MachineLearning():
 	# returns a set of the "best" parameters for a given algorithm
 	def get_params(self, algorithm):
 		if (algorithm == "knn"):
-			return  {'n_neighbors': '3'}
+			return  {'n_neighbors': 3}
 		elif (algorithm == "svm"):
 			return  {
 						'kernel': 'poly',
@@ -272,16 +277,39 @@ class MachineLearning():
 		model = self.get_model(algorithm, params)
 		logging.info("Training %s with the following parameters:" %(algorithm) )
 		logging.info(params)
-		img_train, img_test, lbl_train, lbl_test = train_test_split(self.imgs, self.labels, test_size = 0.2)
 
-		model.fit(img_train, lbl_train)
-		score_train = model.score(img_train, lbl_train)
-		score_test = model.score(img_test, lbl_test)
+		dask_client = Client(DASK_IP_ADRESS)
+		img_train, img_test, lbl_train, lbl_test = train_test_split(self.imgs, self.labels, test_size = 0.2)
+		
+		"""with joblib.parallel_backend('dask', scatter=[img_train, img_test, lbl_train, lbl_test]):
+			print('Training...')
+			model_cp = model.fit(img_train, lbl_train).compute()
+			model = dask.delayed(model_cp)
+			score_train = model.score(img_train, lbl_train).compute()
+			score_test = model.score(img_test, lbl_test).compute()"""
+
+		futures_img_train = dask_client.scatter(img_train)
+		futures_img_test = dask_client.scatter(img_test)
+		futures_lbl_train = dask_client.scatter(lbl_train)
+		futures_lbl_test = dask_client.scatter(lbl_test)
+
+		future_model_fit = dask_client.submit(model.fit, futures_img_train, futures_lbl_train)
+
+		model = future_model_fit.result()
+
+		future_score_train = dask_client.submit(model.score, futures_img_train, futures_lbl_train)
+		future_score_test = dask_client.submit(model.score, futures_img_test, futures_lbl_test)
+
+		score_test = future_score_test.result()
+		score_train = future_score_train.result()
+		
+
 		logging.info("Training complete, saving model %s to file" %(algorithm) )
-		
+
 		# saving the model to file
-		joblib.dump(model, str(self.model_folder) + str(algorithm) + ".model")
-		
+		with self.hdfs_client.write('/' + str(self.model_folder) + str(algorithm) + ".model") as writer:
+			joblib.dump(model, writer)
+
 		logging.info("Score on training set: %.4f, score on test set: %.4f" %(score_train, score_test) )
 
-		return score_test
+		return score_train, score_test

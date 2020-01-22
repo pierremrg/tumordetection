@@ -16,11 +16,11 @@ class Orchestration():
 
 	def run(self):
 
-		dir_img = '../images/'
-		dir_img_augm = '../images_augmented/'
-		dir_img_augm_crop = '../images_augmented_crop/'
-		dir_img_norm = '../new_data_norm/'
-		dir_algo = '../algo_trained/'
+		dir_img = 'images/'
+		dir_img_augm = 'images_augmented/'
+		dir_img_augm_crop = 'images_augmented_crop/'
+		dir_img_norm = 'new_data_norm/'
+		dir_algo = 'algo_trained/'
 
 		#Liste de String de format JSON : "algo" : {"train_acc":train_acc, "val_acc":val_acc}
 		#exemple "resnet":{"train_acc":0.85 ,"val_acc":0.82}
@@ -65,7 +65,7 @@ class Orchestration():
 					list_returns_trains.append(r.text)
 			elif algo in list_algo_ml:
 				logging.info('orchestration.train_' + algo)
-				URL = "http://127.0.0.1:5007/ai/v1/ml"
+				URL = "http://127.0.0.1:5007/api/v1/ml"
 				PARAMS = {'images_directory': dir_img_norm, 'save_directory': dir_algo, 'algorithm': algo}
 				r = requests.get(url = URL, params = PARAMS)
 				list_returns_trains.append(r.text)
