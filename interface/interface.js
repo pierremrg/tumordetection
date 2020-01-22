@@ -39,13 +39,13 @@ $(function(){
 						'<p class="small">Train accuracy: '+parseInt(values.train_acc*100)+'%'+
 						'<div class="progress">' +
 						'<div class="complete" ' +
-						'style="width:'+parseInt(values.val_acc*100)+'%' +
+						'style="width:'+parseInt(values.train_acc*100)+'%' +
 						';background:#00A4DF"></div>' +
 						'</div>'+
 						'<p class="small">Validation accuracy: '+parseInt(values.val_acc*100)+'%'+
 						'<div class="progress">' +
 						'<div class="complete" ' +
-						'style="width:'+parseInt(values.train_acc*100)+'%' +
+						'style="width:'+parseInt(values.val_acc*100)+'%' +
 						';background:#00A4DF"></div>' +
 						'</div>'
 					);
