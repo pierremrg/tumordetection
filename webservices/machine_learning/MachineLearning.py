@@ -1,6 +1,7 @@
 from PIL import Image
 import os
 import numpy as np
+import time
 
 # Logging
 import logging
@@ -30,10 +31,10 @@ from dask_ml.model_selection import GridSearchCV
 class MachineLearning():
 
 	# reads images and stores them
-	def __init__(self, input_folder, model_folder):
+	def __init__(self, input_folder, model_folder, img_size = 240):
 		self.input_folder = input_folder
 		self.model_folder = model_folder
-		self.imgs, self.labels = self.read_images(input_folder, 240)
+		self.imgs, self.labels = self.read_images(input_folder, img_size)
 		self.default = "svm"
 	
 	# reads images from a directory and resizes them
@@ -92,7 +93,7 @@ class MachineLearning():
 	# returns a set of the "best" parameters for a given algorithm
 	def get_params(self, algorithm):
 		if (algorithm == "knn"):
-			return  {'n_neighbors': '3'}
+			return  {'n_neighbors': 9}
 		elif (algorithm == "svm"):
 			return  {
 						'kernel': 'poly',
@@ -117,6 +118,7 @@ class MachineLearning():
 		
 	# trains a model using the best parameters and returns the score
 	def train(self, algorithm, imgs, labels):
+		t_start = time.process_time()
 		params = self.get_params(algorithm)
 		model = self.get_model(algorithm, params)
 		logging.info("Training %s with the following parameters:" %(algorithm) )
@@ -131,6 +133,7 @@ class MachineLearning():
 		# saving the model to file
 		joblib.dump(model, str(self.model_folder) + str(algorithm) + ".model")
 		
-		logging.info("Score on training set: %.4f, score on test set: %.4f" %(score_train, score_test) )
+		t_end = time.process_time()
+		logging.info("Score on training set: %.4f, score on test set: %.4f, time taken: %4.f" %(score_train, score_test, (t_end-t_start) ) )
 
 		return (score_train, score_test)
