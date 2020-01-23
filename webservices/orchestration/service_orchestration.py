@@ -6,6 +6,8 @@ import json
 
 from Orchestration import Orchestration
 
+from hdfs import InsecureClient
+
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -16,19 +18,19 @@ list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 # Pour lancer ce service en local, il faut avoir modifié les ports des microservices (par ex, app.run(port = 5001)) car sinon impossible de lancer plusieurs apps flask en même temps
 @app.route('/api/v1/orchestrationTraining', methods=['POST'])
 def orchestrationTraining():
+    hdfs_cli = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 
-    # #JSON (url_db & classifiers)
-    # if request.args.get('json') is None:
-    #     return 'No "json" given.'
-    # else:
-    #     data = request.args.get('json')
-
-    # data = json.loads(data)
+    hdfs_cli.delete('/images', recursive=True)
+    hdfs_cli.delete('/images_augmented', recursive=True)
+    hdfs_cli.delete('/images_crop', recursive=True)
+    hdfs_cli.delete('/images_norm', recursive=True)
 
     data = request.get_json()
-
+    
     url = data["url_db"]
+
     classifiers = data["classifiers"]
+
 
     list_algo = []
 
@@ -39,6 +41,7 @@ def orchestrationTraining():
 
     orch = Orchestration(url, list_algo)
     list_returns_trains = orch.run()
+
     string_result = '{ \"returns_trains\": {'
     for i in range(len(list_returns_trains)):
         string_result += list_returns_trains[i]

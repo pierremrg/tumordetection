@@ -1,6 +1,6 @@
 $(function(){
 
-	var classifiers = ['knn', 'gbc', 'rfc', 'svm', 'mlp', 'resnet', 'alexnet', 'vgg', 'cnnmedium'];
+	var classifiers = ['knn', 'gbc', 'rfc', 'svm', 'nn', 'resnet', 'alexnet', 'vgg', 'cnnmedium'];
 	var classifiers_names = ['k-NN', 'GBC', 'RFC', 'SVM', 'MLP', 'ResNet', 'AlexNet', 'VGG', 'CNN (Medium)'];
 
 	function getClassifierName(classifier){
@@ -24,18 +24,18 @@ $(function(){
 		};
 
 		$('#train-section .load').fadeIn();
+		$('#train-section .results').empty();
 
 		$.ajax({
-			url: 'simu_orchestrateur.php',
+			url: 'http://localhost:5009/api/v1/orchestrationTraining',
 			type: 'POST',
-			data: data,
+			contentType: 'application/json',
+			data: JSON.stringify(data),
 			dataType: 'json',
 			complete: function(){
 				$('#train-section .load').hide();
 			},
 			success: function(data){
-				$('#train-section .results').empty();
-
 				$.each(data.returns_trains, function(classifier, values){
 
 					$('#train-section .results').append(
@@ -99,9 +99,10 @@ $(function(){
 		ajaxPicture.append('classifiers', checked_classifiers);
 
 		$('#test-section .load').fadeIn();
+		$('#test-section .results').empty();
 
 		$.ajax({
-			url: 'http://localhost:5015/api/v1/simu_orchestrateur',
+			url: 'http://localhost:5013/api/v1/orchestrationPrediction',
 			type: 'POST',
 			data: ajaxPicture,
 			dataType: 'json',
@@ -118,12 +119,10 @@ $(function(){
 					return false;
 				}
 
-				$('#test-section .results').empty();
-
 				$.each(data.returns_predictions, function(classifier, values){
 
 					var result;
-					if(values.label)
+					if(values.label == 1)
 						result = 'yes';
 					else
 						result = 'no';

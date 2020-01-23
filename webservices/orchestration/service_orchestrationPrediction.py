@@ -19,11 +19,14 @@ list_algo_ml = ["knn", "svm", "gbc", "rfc", "nn"]
 # Pour lancer ce service en local, il faut avoir modifié les ports des microservices (par ex, app.run(port = 5001)) car sinon impossible de lancer plusieurs apps flask en même temps
 @app.route('/api/v1/orchestrationPrediction', methods=['POST'])
 def orchestrationPrediction():
+	hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
+
+	hdfs_client.delete('/image_test', recursive=True)
+	hdfs_client.delete('/image_test_crop', recursive=True)
+	hdfs_client.delete('/image_test_ready', recursive=True)
 
 	if request.files['picture'] is None:
 		return json.dumps(None)
-
-	hdfs_client = InsecureClient('http://192.168.1.4:9870', user='hadoop')
 
 	picture = request.files['picture']
 
@@ -38,12 +41,14 @@ def orchestrationPrediction():
 
 	list_algo = []
 
+	for algo in classifiers[0].split(','):
 
-	orchPred = OrchestrationPrediction('test.jpg', classifiers)
+		if not(algo in list_algo_deep) and not(algo in list_algo_ml):
+			return algo + ' is an incorrect algo.'
+		list_algo.append(algo)
+
+	orchPred = OrchestrationPrediction('test.jpg', list_algo)
 	list_returns_predict = orchPred.run()
-
-	print('ok4')
-	print(list_returns_predict)
 
 	data = {}
 	data['returns_predictions'] = {}
